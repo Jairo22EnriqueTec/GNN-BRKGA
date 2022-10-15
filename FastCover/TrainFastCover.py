@@ -35,55 +35,20 @@ seed = args.Seed
 patience = 5
 n_batch = 10
 input_dim = 32
-
-
-TRAIN_LIST = ['dnc-corecipient.txt',
-'as-caida20071105.txt',
- 'ca-AstroPh.txt',
- 'dnc-corecipient.txt',
- 'douban.txt',
- 'Facebook.txt',
- 'fb-pages-company.txt',
- 'fb-pages-food.txt',
- 'fb-pages-government.txt',
- 'fb-pages-media.txt',
- 'fb-pages-politician.txt',
- 'fb-pages-public-figure.txt',
- 'fb-pages-sport.txt',
- 'fb-pages-tvshow.txt',
- 'git.txt',
- 'HepPh.txt',
- 'loc-brightkite_edges.txt',
- 
- 'moreno_names_names.txt',
- 'Nethept.txt',
- 'petster-friendships-hamster-uniq.txt',
- 'soc-gemsec-HU.txt',
- 'soc-gemsec-RO.txt',
- 'soc-hamsterster.txt',
- 'topology.txt']
-
-TEST_LIST = [
-'DBLP.txt',
-'facebook-wosn-links.txt',
-'fb-pages-artist.txt',
-'soc-gemsec-HR.txt',
-'loc-gowalla_edges.txt',
-'Enron.txt'
-]
-
 d = 1
-
-HIDDEN_FEATS = [input_dim]*6#, 32, 32, 32, 32, 32]
-
+HIDDEN_FEATS = [input_dim]*6
 torch.manual_seed(seed)
+
+PATH_TO_TRAIN = "data/ER_graphs/train/"
+PATH_TO_TEST = "data/ER_graphs/test/"
+
+TRAIN_LIST = [graph for graph in os.listdir(PATH_TO_TRAIN)]
+
+TEST_LIST = [graph for graph in os.listdir(PATH_TO_TEST)]
 
 print(f"\nInstancias a entrenar: {TRAIN_LIST}\n")
 
-PATH_TO_TRAIN = "data/"
 PATH_SAVE_TRAINS = "runs/"
-
-#TRAIN_LIST = get_graph_names(PATH_TO_TRAIN)
 
 FEATURE_TYPE = "1"
 directed_train = False
@@ -523,18 +488,14 @@ graphs = []
 dglgraphs = []
 
 for file in TRAIN_LIST:
-    
-    print(f"Cargando {file} ...")
-    graph = igraph.Graph().Read_Edgelist(
-        f"{PATH_TO_TRAIN}{file}", directed=False)
-
+    print(f"Cargando {PATH_TO_TRAIN+file} ...")
+    graph = igraph.Graph().Read_Pickle(PATH_TO_TRAIN+file)
     graphs.append(graph)
     
     dglgraph = get_rev_dgl(graph, FEATURE_TYPE, input_dim, directed_train, use_cuda)
-    
     dglgraphs.append(dglgraph)
 
-print("Grafos cargados.\n")
+print("Instancias cargadas.\n")
 
 adj_matrices = []
 greedy_perfs = []
