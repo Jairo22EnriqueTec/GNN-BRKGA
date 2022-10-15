@@ -37,7 +37,7 @@ n_batch = 10
 input_dim = 32
 
 
-TRAIN_LIST = ['dnc-corecipient.txt'
+TRAIN_LIST = ['dnc-corecipient.txt',
 'as-caida20071105.txt',
  'ca-AstroPh.txt',
  'dnc-corecipient.txt',
@@ -579,6 +579,7 @@ early_stopping = EarlyStopping(patience=patience, verbose=True)
 if closed_graph is None:
     closed_graph = [None] * len(graphs)
 
+print("Empezando entrenamiento...\n")
 for epoch in range(n_epoch):
     timer = time.time()
     for adj_mat, graph, dglgraph, greedy_perf, closed_graph in zip(adj_matrices, graphs, dglgraphs, greedy_perfs, closed_graphs):
@@ -599,9 +600,9 @@ for epoch in range(n_epoch):
     print(f"Train Epoch {epoch} | Loss: {train_loss:.2f} | Perf: {train_perf:.2f} | Elapsed Time: {time.time() - timer:.2f}")
     print()
     
-    if epoch%5 == 0 and epoch != 0:
-        torch.save(net.state_dict(), f=f"{save_filename}-epoch-{epoch}.pt")
-        print(f"Epoch {epoch} saved.\n")
+    #if epoch%5 == 0 and epoch != 0:
+    torch.save(net.state_dict(), f=f"Checkpoint-epoch-{epoch}.pt")
+    print(f"Epoch {epoch} saved.\n")
 
     # clear lists to track next epoch
     train_losses = []
@@ -617,6 +618,7 @@ for epoch in range(n_epoch):
 # load the last checkpoint with the best model
 net.load_state_dict(torch.load('checkpoint.pt'))
 
+print("Salvando resultados...")
 net.cpu()
 
 dt_string = datetime.now().strftime("%m-%d_%H-%M")
