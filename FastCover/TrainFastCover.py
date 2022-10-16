@@ -562,7 +562,7 @@ for epoch in range(n_epoch):
     print()
     
     #if epoch%5 == 0 and epoch != 0:
-    torch.save(net.state_dict(), f=f"Checkpoint-epoch-{epoch}.pt")
+    torch.save(net.state_dict(), f=f"{PATH_SAVE_TRAINS}checkpoints/Checkpoint-epoch-{epoch}.pt")
     print(f"Epoch {epoch} saved.\n")
 
     # clear lists to track next epoch
