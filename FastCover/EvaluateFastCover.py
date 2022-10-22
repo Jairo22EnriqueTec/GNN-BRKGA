@@ -1,60 +1,112 @@
-import sys
-sys.path.append("../")  # Change the path.
-import os
-import time
-from pathlib import Path
-import logging
-
-from glob import glob
-
+import igraph
+import dgl
 import torch
+import time
+import os
+import networkx as nx
+from datetime import datetime
 import pandas as pd
+from utils import *
+from GRAT import GRAT3
+import warnings
+warnings.filterwarnings('ignore')
+import argparse
 
-import numpy as np
+
+parser = argparse.ArgumentParser()
+
+parser.add_argument("-th", "--Threshold", help = "Infection Threshold", type = float)
+args = parser.parse_args()
 
 
-records = []
-repeat = 3
-ts = np.zeros(repeat)
-for i in range(repeat):
-    # Select seeds
-    t_start = time.time()
-    ## =================================================================================================
-    # Este es el output de la red, en donde se tienen las probabilidades de que cada nodo sea parte de la
-    # solución final
-    ## =================================================================================================
-    out = net.grat(dglgraph, dglgraph.ndata['feat']).squeeze(1)#!!!!!!!!!!!!!!
-    ## =================================================================================================
-    # Esta función regresas el k nodos con la máxima influencia
-    _, nn_seeds = torch.topk(out, k)
-    ## =================================================================================================
-    ts[i] = (time.time() - t_start)
+PATH_SAVE_TRAINS = "runs/"
+PATH_SAVE_RESULTS = 'results/'
+PATH_TO_TEST = "../BRKGA/instances/txt/"
+NAME_SAVE_RESULTS = 'FastCover' #Change this
 
-# Evaluate time
-t_mean = ts.mean() 
-t_std = ts.std() / np.sqrt(repeat)
+FEATURE_TYPE = "1"
+HIDDEN_FEATS = [32]*6
+input_dim = 32
+use_cuda = False
+directed_test = False
 
-## =================================================================================================
-# Nodos cubiertos del total, para nosotros d = 1 ya que solo se puede llegar al siguiente
-# baselines.heuristics.py -> get_influence_d
-# 
-## =================================================================================================
-n_covered = get_influence(graph, nn_seeds)
-n, m = graph.vcount(), graph.ecount()
-## =================================================================================================
-print(f"k: {k}. Coverage: {n_covered}/{n}={n_covered/n:.2f}. Time: {t_mean:.2f} ({t_std:.2f})")
-model_name = "GRAT3"
-# Write to records
-records.append({
-    "graph": graph_name,
-    "model": model_name,
-    "seed": seed,
-    "n": n,
-    "m": m,
-    "d": d,
-    "k": k,
-    "n_covered": n_covered,
-    "coverage": n_covered/n,
-    "t_mean": t_mean,
-    "t_std": t_std,
-})
+threshold = args.Threshold
+dt_string = datetime.now().strftime("%m-%d_%H-%M")
+
+RUNS_LIST = [run for run in os.listdir(PATH_SAVE_TRAINS) if ".pt" in run]
+
+SEEDS = []
+MODELS = []
+for run_name in RUNS_LIST:
+    SEEDS.append(run_name.split("_")[2])
+    MODELS.append(run_name.split("_")[0])
+
+for run_name, model, seed in zip(RUNS_LIST, MODELS, SEEDS):
+    print()
+    print(f"Evaluation of model: {model}, seed: {seed} in {run_name}")
+    print()
+    
+    if model == 'GRAT':
+        net = GRAT3(*HIDDEN_FEATS)
+        net.load_state_dict(torch.load(PATH_SAVE_TRAINS+run_name))
+    if use_cuda:
+        net.cuda()
+
+    Graphs = [graph for graph in os.listdir(PATH_TO_TEST)]
+    #Graphs = ['graph_football.txt', 'graph_karate.txt', 'graph_dolphins.txt', 'graph_jazz.txt']
+    
+    graphs = []
+    dglgraphs = []
+    names = []
+    for file in Graphs:
+            print(f"Loading {PATH_TO_TEST+file} ...")
+            names.append(file.split(".")[0].replace("graph_", ""))
+
+            graph = igraph.Graph().Read_Edgelist("../BRKGA/instances/txt/"+file)
+            graphs.append(graph)
+
+            dglgraph = get_rev_dgl(graph, FEATURE_TYPE, input_dim, directed_test, use_cuda)
+            dglgraphs.append(dglgraph)
+
+    print()
+    print("----- Beginning evaluation -----")
+    print()
+    records = []
+    
+    c = 1
+    Total = len(names)
+    
+    for dglgraph, graph, name in zip(dglgraphs, graphs, names):
+        start_time = time.time()
+
+        out = net.grat(dglgraph, dglgraph.ndata['feat']).squeeze(1)
+
+        G = graph.to_networkx().to_undirected()
+
+        n = len(G.nodes())
+
+        _, minTargetGRAT = FindMinimumTarget(G, out, threshold)
+
+        final_time = (time.time() - start_time)
+
+        print(f"{c}/{Total} Graph: {name}")
+        print(f"Best Target Set length: {minTargetGRAT} out of {n}")
+        print(f"Ratio Solution / Graph lentgh: {minTargetGRAT/n:.2f}")
+        print()
+        records.append({
+        "graph": name,
+        "model": model,
+        "seed": seed,
+        "threshold": threshold,
+        "n_covered": minTargetGRAT,
+        "n": n,
+        "coverage": minTargetGRAT/n,
+        "t_mean": final_time
+        })
+    
+        pd.DataFrame(records).to_csv(PATH_SAVE_RESULTS + NAME_SAVE_RESULTS +"_" + dt_string + ".csv")
+        
+        c+=1
+print(f"Evaluation has finnished successfully. \nData saved in {PATH_SAVE_RESULTS}")
+
+

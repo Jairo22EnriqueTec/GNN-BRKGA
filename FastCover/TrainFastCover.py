@@ -1,6 +1,5 @@
 import igraph
 import dgl
-import torch
 import heapq
 import time
 import numpy as np
@@ -583,6 +582,6 @@ print("Salvando resultados...")
 net.cpu()
 
 dt_string = datetime.now().strftime("%m-%d_%H-%M")
-torch.save(net.state_dict(), f=f"{PATH_SAVE_TRAINS}{'GRAT'}_seed_{seed}_{dt_string}.pt")  # Change the path
+torch.save(net.state_dict(), f=f"{PATH_SAVE_TRAINS}{'GRAT'}_seed_{seed}_date_{dt_string}.pt")  # Change the path
 with open(f"{PATH_SAVE_TRAINS}{'GRAT'}_seed_{seed}_k_{dt_string}.pkl", "wb") as f:
     pickle.dump(loss_list, f)    
