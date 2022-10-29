@@ -16,12 +16,55 @@ import argparse
 parser = argparse.ArgumentParser()
 
 parser.add_argument("-th", "--Threshold", help = "Infection Threshold", type = float)
+parser.add_argument("-type", "--Type", help = "short, large or full", type = str)
 args = parser.parse_args()
 
+Graphs_short = [
+ 'ego-facebook.txt']
+"""
+ 'gemsec_facebook_artist.txt',
+ 'graph_actors_dat.txt',
+ 'graph_CA-AstroPh.txt',
+ 'graph_CA-CondMat.txt',
+ 'graph_CA-GrQc.txt',
+ 'graph_CA-HepPh.txt',
+ 'graph_CA-HepTh.txt',
+ 'graph_dolphins.txt',
+ 'graph_Email-Enron.txt',
+ 'graph_football.txt',
+ 'graph_jazz.txt',
+ 'graph_karate.txt',
+ 'graph_ncstrlwg2.txt',
+ 'soc-gplus.txt',
+ 'socfb-Brandeis99.txt',
+ 'socfb-Mich67.txt',
+ 'socfb-nips-ego.txt']
+"""
+
+Graphs_large = ['Amazon0302.txt',
+ 'Amazon0312.txt',
+ 'Amazon0505.txt',
+ 'Amazon0601.txt',
+ 'com-youtube.ungraph.txt',
+ 'com-dblp.ungraph.txt',
+ 'loc-gowalla_edges.txt',
+ 'deezer_HR.txt',
+ 'musae_git.txt']
+
+PATH_TO_TEST = "../BRKGA/instances/txt/"
+
+if args.Type == "short":
+    Graphs = Graphs_short
+elif args.Type == "large":
+    Graphs = Graphs_large
+elif args.Type == "full":
+    Graphs = [graph for graph in os.listdir(PATH_TO_TEST)]
+else:
+    raise NameError("Only: 'short', 'large' or 'full")
 
 PATH_SAVE_TRAINS = "runs/"
 PATH_SAVE_RESULTS = 'results/'
-PATH_TO_TEST = "../BRKGA/instances/txt/"
+
 NAME_SAVE_RESULTS = 'FastCover' #Change this
 
 FEATURE_TYPE = "1"
@@ -41,6 +84,11 @@ for run_name in RUNS_LIST:
     SEEDS.append(run_name.split("_")[2])
     MODELS.append(run_name.split("_")[0])
 
+
+records = []
+
+Total = len(Graphs)
+    
 for run_name, model, seed in zip(RUNS_LIST, MODELS, SEEDS):
     print()
     print(f"Evaluation of model: {model}, seed: {seed} in {run_name}")
@@ -52,61 +100,44 @@ for run_name, model, seed in zip(RUNS_LIST, MODELS, SEEDS):
     if use_cuda:
         net.cuda()
 
-    Graphs = [graph for graph in os.listdir(PATH_TO_TEST)]
-    #Graphs = ['graph_football.txt', 'graph_karate.txt', 'graph_dolphins.txt', 'graph_jazz.txt']
-    
-    graphs = []
-    dglgraphs = []
-    names = []
+    c = 1
     for file in Graphs:
             print(f"Loading {PATH_TO_TEST+file} ...")
-            names.append(file.split(".")[0].replace("graph_", ""))
+            name = file.split(".")[0].replace("graph_", "")
 
-            graph = igraph.Graph().Read_Edgelist("../BRKGA/instances/txt/"+file)
-            graphs.append(graph)
+            graph = igraph.Graph().Read_Edgelist(PATH_TO_TEST + file)
 
             dglgraph = get_rev_dgl(graph, FEATURE_TYPE, input_dim, directed_test, use_cuda)
-            dglgraphs.append(dglgraph)
+            start_time = time.time()
 
-    print()
-    print("----- Beginning evaluation -----")
-    print()
-    records = []
-    
-    c = 1
-    Total = len(names)
-    
-    for dglgraph, graph, name in zip(dglgraphs, graphs, names):
-        start_time = time.time()
+            out = net.grat(dglgraph, dglgraph.ndata['feat']).squeeze(1)
 
-        out = net.grat(dglgraph, dglgraph.ndata['feat']).squeeze(1)
+            G = graph.to_networkx().to_undirected()
 
-        G = graph.to_networkx().to_undirected()
+            n = len(G.nodes())
 
-        n = len(G.nodes())
+            _, minTargetGRAT = FindMinimumTarget(G, out, threshold)
 
-        _, minTargetGRAT = FindMinimumTarget(G, out, threshold)
+            final_time = (time.time() - start_time)
 
-        final_time = (time.time() - start_time)
+            print(f"{c}/{Total} Graph: {name}")
+            print(f"Best Target Set length: {minTargetGRAT} out of {n}")
+            print(f"Ratio Solution / Graph lentgh: {minTargetGRAT/n:.2f}")
+            print()
+            records.append({
+            "graph": name,
+            "model": model,
+            "seed": seed,
+            "threshold": threshold,
+            "n_covered": minTargetGRAT,
+            "n": n,
+            "coverage": minTargetGRAT/n,
+            "t_mean": final_time
+            })
 
-        print(f"{c}/{Total} Graph: {name}")
-        print(f"Best Target Set length: {minTargetGRAT} out of {n}")
-        print(f"Ratio Solution / Graph lentgh: {minTargetGRAT/n:.2f}")
-        print()
-        records.append({
-        "graph": name,
-        "model": model,
-        "seed": seed,
-        "threshold": threshold,
-        "n_covered": minTargetGRAT,
-        "n": n,
-        "coverage": minTargetGRAT/n,
-        "t_mean": final_time
-        })
-    
-        pd.DataFrame(records).to_csv(PATH_SAVE_RESULTS + NAME_SAVE_RESULTS +"_" + dt_string + ".csv")
-        
-        c+=1
+            pd.DataFrame(records).to_csv(PATH_SAVE_RESULTS + NAME_SAVE_RESULTS +"_" + dt_string + ".csv")
+
+            c+=1
 print(f"Evaluation has finnished successfully. \nData saved in {PATH_SAVE_RESULTS}")
 
 

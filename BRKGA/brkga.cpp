@@ -156,7 +156,6 @@ int first_pos_not_member(vector<Option>& options, vector<bool>& member) {
 
 bool diffusion_check(set<int> to_add) {
 
-
     vector<int> covered_by(n_of_vertices, 0);
     vector<bool> done(n_of_vertices, false);
     for (set<int>::iterator sit = to_add.begin(); sit != to_add.end(); ++sit) {

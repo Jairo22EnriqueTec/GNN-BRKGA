@@ -1,9 +1,10 @@
 import igraph
 import dgl
 import torch
+import numpy as np
 import networkx as nx
 
-def CheckInfect(G, Infected, threshold):
+def CheckInfect(G, Infected, threshold = 0.5):
     """
     Recibe Una red G, conjunto de nodos infectados y el umbral
     Propaga la infección en la red todo lo que puede
@@ -28,9 +29,10 @@ def CheckInfect(G, Infected, threshold):
                 NeighborsInfedted = [v for v in TotalNeighbors if v in Infected]
                 
                 ratio = len(NeighborsInfedted)/len(TotalNeighbors)
-                if ratio > threshold:
+                if ratio >= threshold:
                     Infected.append(neighborL1)
-    return len(Infected) == len(G.nodes()), len(Infected)/len(G.nodes())
+    return len(Infected) == len(G.nodes()), len(Infected)/len(G.nodes()), Infected
+
 
 def FindMinimumTarget(G, out, threshold = 0.5):
     """
@@ -38,37 +40,28 @@ def FindMinimumTarget(G, out, threshold = 0.5):
     G - networkx
     out - probabilities from torch
     threshold = 0.5 - umbral de infección
-    
     """
+    n = len(G.nodes())
+    Solution = []
+    Infected = []
     #G = graph.to_networkx()
-    
-    kMax = int(len(G.nodes()) * threshold)
-    kMin = 0
-    j = []
-    for _ in range(10):
-        
-        
-        _, Infected = torch.topk(out, kMax)
-        
-        # Anexando los nodos isolados, si existen
-        Infected = list(Infected.numpy())
-        for i in nx.isolates(G):
-            Infected.append(i)
-        
-        
-        Inf, _ = CheckInfect(G, Infected, threshold)
-        
-        
-        if Inf:
-            kMax = kMax - (kMax - kMin)//2
-        else:
-            t = kMax
-            kMax = kMax + (kMax - kMin)//2
-            kMin = t
-        if (kMax - kMin) == 1:
+    out_ = out.detach().numpy().copy()
+    for i in range(len(G.nodes())):
+
+        Inf = np.argmax(out_)
+        out_ = np.delete(out_, Inf)
+
+        if Inf not in Solution:
+            Solution.append(Inf)
+        if Inf not in Infected:
+            Infected.append(Inf)
+        Sol, P,  Infected = CheckInfect(G, Infected, threshold = threshold)
+        if Sol:
             break
-    #print(f"El mejor es {kMax}")
-    return Infected, kMax
+        if i % n//6 == 0:
+            print(f"{P:.2f} Infected")
+    return Solution
+
 
 def get_rev_dgl(graph, feature_type='0', feature_dim=None, is_directed=False, use_cuda=False):
     """get dgl graph from igraph
