@@ -53,14 +53,17 @@ def FindMinimumTarget(G, out, threshold = 0.5):
 
         if Inf not in Solution:
             Solution.append(Inf)
+        
         if Inf not in Infected:
             Infected.append(Inf)
+        else:
+            continue
         Sol, P,  Infected = CheckInfect(G, Infected, threshold = threshold)
         if Sol:
             break
         if i % n//6 == 0:
             print(f"{P:.2f} Infected")
-    return Solution
+    return Solution, len(Solution)
 
 
 def get_rev_dgl(graph, feature_type='0', feature_dim=None, is_directed=False, use_cuda=False):

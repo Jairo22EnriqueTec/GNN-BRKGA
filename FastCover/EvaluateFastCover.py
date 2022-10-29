@@ -19,9 +19,10 @@ parser.add_argument("-th", "--Threshold", help = "Infection Threshold", type = f
 parser.add_argument("-type", "--Type", help = "short, large or full", type = str)
 args = parser.parse_args()
 
+# Example: python EvaluateFastCover.py -th 0.5 -type "short"
+
 Graphs_short = [
- 'ego-facebook.txt']
-"""
+ 'ego-facebook.txt',
  'gemsec_facebook_artist.txt',
  'graph_actors_dat.txt',
  'graph_CA-AstroPh.txt',
@@ -39,7 +40,6 @@ Graphs_short = [
  'socfb-Brandeis99.txt',
  'socfb-Mich67.txt',
  'socfb-nips-ego.txt']
-"""
 
 Graphs_large = ['Amazon0302.txt',
  'Amazon0312.txt',
@@ -108,6 +108,9 @@ for run_name, model, seed in zip(RUNS_LIST, MODELS, SEEDS):
             graph = igraph.Graph().Read_Edgelist(PATH_TO_TEST + file)
 
             dglgraph = get_rev_dgl(graph, FEATURE_TYPE, input_dim, directed_test, use_cuda)
+            
+            print("\nStarting infection\n")
+
             start_time = time.time()
 
             out = net.grat(dglgraph, dglgraph.ndata['feat']).squeeze(1)
@@ -116,13 +119,14 @@ for run_name, model, seed in zip(RUNS_LIST, MODELS, SEEDS):
 
             n = len(G.nodes())
 
-            _, minTargetGRAT = FindMinimumTarget(G, out, threshold)
+            _ , minTargetGRAT = FindMinimumTarget(G, out, threshold)
 
             final_time = (time.time() - start_time)
 
             print(f"{c}/{Total} Graph: {name}")
             print(f"Best Target Set length: {minTargetGRAT} out of {n}")
-            print(f"Ratio Solution / Graph lentgh: {minTargetGRAT/n:.2f}")
+            print(f"Ratio Solution / Graph lentgh: {minTargetGRAT/n:.3f}")
+            print(f"Time: {final_time:.2f}s")
             print()
             records.append({
             "graph": name,
