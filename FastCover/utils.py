@@ -3,6 +3,7 @@ import dgl
 import torch
 import numpy as np
 import networkx as nx
+from create_dataset import CreateDataset
 
 def CheckInfect(G, Infected, threshold = 0.5):
     """
@@ -148,3 +149,19 @@ def MDH(G, threshold = 0.5, print_ =False):
         if print_:
             print(f"{len(Infected)/len(G.nodes()):.3f} infectado")
     return Solution, len(Infected)
+
+def Convert2DataSet(Graphs, Optimals):
+    g = []
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    for G, OptimalSet in zip(Graphs, Optimals):
+        NumNodes = G.number_of_nodes()
+        labels = np.zeros(NumNodes)
+        labels[OptimalSet] = 1
+
+        dataset = CreateDataset(G, labels)
+        data = dataset[0]
+
+        data =  data.to(device)
+        g.append(data)
+        
+    return g

@@ -30,6 +30,7 @@
 #include <limits>
 #include <random>
 #include <chrono>
+#include <fstream>
 
 using namespace std;
 
@@ -58,7 +59,7 @@ int population_size = 30;
 double elite_proportion = 0.15; // normally between 0.1 and 0.25
 double mutant_proportion = 0.20; // normally between 0.1 and 0.3
 double elite_inheritance_probability = 0.7; // normally greater than 0.5 and <= 0.8
-double threshold = 0.7;
+double threshold = 0.5;
 int seeding = 0;
 bool tuning = false;
 
@@ -361,8 +362,11 @@ int main( int argc, char **argv ) {
             ctime = double(current_end - start) / CLOCKS_PER_SEC;
         }   
         if (not tuning) {
-            for (set<int>::iterator sit = (population[0].target_set).begin(); sit != (population[0].target_set).end(); ++sit) cout << " " << *sit;
-            cout << endl;
+            //for (set<int>::iterator sit = (population[0].target_set).begin(); sit != (population[0].target_set).end(); ++sit) cout << " " << *sit;
+            //cout << endl;
+            //cout << "aqui"<< endl;
+            std::ofstream outFile("../FastCover/data/ER_graphs/test/optimal/ER_17.txt");
+            for (const auto &e : population[0].target_set) outFile << e << "\n";
         }
         if (not tuning) cout << "end trial " << trial + 1 << endl;
     }
