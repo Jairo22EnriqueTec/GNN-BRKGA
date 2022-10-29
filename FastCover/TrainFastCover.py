@@ -38,8 +38,8 @@ d = 1
 HIDDEN_FEATS = [input_dim]*6
 torch.manual_seed(seed)
 
-PATH_TO_TRAIN = "data/ER_graphs/train/"
-PATH_TO_TEST = "data/ER_graphs/test/"
+PATH_TO_TRAIN = "data/ER_graphs/train/pkl/"
+PATH_TO_TEST = "data/ER_graphs/test/pkl/"
 
 TRAIN_LIST = [graph for graph in os.listdir(PATH_TO_TRAIN)]
 

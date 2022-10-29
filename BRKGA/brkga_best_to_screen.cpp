@@ -35,6 +35,7 @@ using namespace std;
 
 struct Individual {
     vector<double> vec;
+    set<int> target_set;
     int target_set_size;
 };
 
@@ -57,7 +58,7 @@ int population_size = 30;
 double elite_proportion = 0.15; // normally between 0.1 and 0.25
 double mutant_proportion = 0.20; // normally between 0.1 and 0.3
 double elite_inheritance_probability = 0.7; // normally greater than 0.5 and <= 0.8
-double threshold = 0.1;
+double threshold = 0.7;
 int seeding = 0;
 bool tuning = false;
 
@@ -156,6 +157,7 @@ int first_pos_not_member(vector<Option>& options, vector<bool>& member) {
 
 bool diffusion_check(set<int> to_add) {
 
+
     vector<int> covered_by(n_of_vertices, 0);
     vector<bool> done(n_of_vertices, false);
     for (set<int>::iterator sit = to_add.begin(); sit != to_add.end(); ++sit) {
@@ -195,18 +197,18 @@ void evaluate(Individual& ind) {
     vector<int> covered_by(n_of_vertices, 0);
     bool finished = false;
     set<int> input;
-    set<int> target_set;
+    (ind.target_set).clear();
     vector<bool> member(n_of_vertices, false);
     while (not finished) {
         int pos = first_pos_not_member(options, member);
-        target_set.insert(options[pos].node);
+        (ind.target_set).insert(options[pos].node);
         input.insert(options[pos].node);
         member[options[pos].node] = true;
         finished = diffusion(input, member, covered_by, options[pos].node);
     }
     //bool check = diffusion_check(target_set);
     //if (not check) cout << "OHOOHOHOOHOHOHOHOH" << endl;
-    ind.target_set_size = int(target_set.size());
+    ind.target_set_size = int((ind.target_set).size());
 }
 
 void generate_random_solution(Individual& ind, std::default_random_engine& generator, std::uniform_real_distribution<double>& distribution) {
@@ -228,10 +230,6 @@ Main function
 **********/
 
 int main( int argc, char **argv ) {
-    
-
-
-
 
     read_parameters(argc,argv);
 
@@ -311,15 +309,16 @@ int main( int argc, char **argv ) {
                 if (not tuning) cout << "target set size " << best_target_set_size << "\ttime " << ctime << endl;
             }
         }
+        sort(population.begin(), population.end(), individual_compare);
 
         clock_t current = clock();
         ctime = double(current - start) / CLOCKS_PER_SEC;
         while (ctime < computation_time_limit) {
-            sort(population.begin(), population.end(), individual_compare);
             vector<Individual> new_population(population_size);
             for (int ic = 0; ic < n_elites; ++ic) {
                 new_population[ic].vec = population[ic].vec;
                 new_population[ic].target_set_size = population[ic].target_set_size;
+                new_population[ic].target_set = population[ic].target_set;
             }
             for (int ic = 0; ic < n_mutants; ++ic) {
                 generate_random_solution(new_population[n_elites + ic], generator, distribution);
@@ -357,10 +356,14 @@ int main( int argc, char **argv ) {
             }
             population.clear();
             population = new_population;
+            sort(population.begin(), population.end(), individual_compare);
             clock_t current_end = clock();
             ctime = double(current_end - start) / CLOCKS_PER_SEC;
         }   
-
+        if (not tuning) {
+            for (set<int>::iterator sit = (population[0].target_set).begin(); sit != (population[0].target_set).end(); ++sit) cout << " " << *sit;
+            cout << endl;
+        }
         if (not tuning) cout << "end trial " << trial + 1 << endl;
     }
 
