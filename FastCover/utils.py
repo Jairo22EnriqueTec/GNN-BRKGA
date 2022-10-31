@@ -4,66 +4,74 @@ import torch
 import numpy as np
 import networkx as nx
 from create_dataset import CreateDataset
+import gc
 
-def CheckInfect(G, Infected, threshold = 0.5):
-    """
-    Recibe Una red G, conjunto de nodos infectados y el umbral
-    Propaga la infección en la red todo lo que puede
-    Regresa verdadero si se ha infectado toda la red o
-    falso en lo contrario
-    
-    In:
-    G - grafo networkx
-    Infected - Conjunto de nodos iniciales infectados
-    threshold - Umbral de infección
-    """
-    InfectedTemp = []
-    while len(InfectedTemp) != len(Infected):
+def size(V):
+    return np.dot(V, np.ones(len(V)))
+
+def CheckInfect(G, Infected, AM, Num_Neighs, n, threshold = 0.5):    
+   
+    InfectedTemp = np.array([])
+    #"""
+    while size(InfectedTemp) != size(Infected):
         InfectedTemp = Infected.copy()
-        for Inf in InfectedTemp:
-            for neighborL1 in nx.neighbors(G, Inf):
-                if neighborL1 in Infected:
-                    continue
-                
-                TotalNeighbors = [v for v in nx.neighbors(G, neighborL1)]
-                    
-                NeighborsInfedted = [v for v in TotalNeighbors if v in Infected]
-                
-                ratio = len(NeighborsInfedted)/len(TotalNeighbors)
-                if ratio >= threshold:
-                    Infected.append(neighborL1)
-    return len(Infected) == len(G.nodes()), len(Infected)/len(G.nodes()), Infected
+        New = ((np.array(np.dot(AM, Infected.T))[0] / np.array(Num_Neighs)) > threshold)
+        if np.all(New[0] == Infected):
+            break
+        Infected += New[0]
+        Infected[Infected>1] = 1
+        
+    return size(Infected) == n, size(Infected)/n, Infected
 
-
-def FindMinimumTarget(G, out, threshold = 0.5):
+def FindMinimumTarget(G, out = None, threshold = 0.5):
     """
     in:
     G - networkx
     out - probabilities from torch
     threshold = 0.5 - umbral de infección
+    if out = None --> MDH
     """
-    n = len(G.nodes())
+    
     Solution = []
-    Infected = []
+    n = len(G.nodes())
+
+    
+    Infected = np.zeros(n, dtype = "int16")
+    
+    AM = nx.adjacency_matrix(G).todense()
+    AM = np.matrix(AM, dtype = "int16")
+    
+    Num_Neighs = size(AM)
+    Num_Neighs = np.array(Num_Neighs, dtype = "int16")
+    
+    if out == None:
+        out_ = Num_Neighs.copy()
+    else:
+        out_ = out.detach().numpy().copy()
+    
     #G = graph.to_networkx()
-    out_ = out.detach().numpy().copy()
-    for i in range(len(G.nodes())):
+    for i in range(n):
 
         Inf = np.argmax(out_)
         out_ = np.delete(out_, Inf)
 
-        if Inf not in Solution:
-            Solution.append(Inf)
-        
-        if Inf not in Infected:
-            Infected.append(Inf)
-        else:
+        if Infected[Inf] == 1:
             continue
-        Sol, P,  Infected = CheckInfect(G, Infected, threshold = threshold)
+        
+        Solution.append(Inf)
+        Infected[Inf] = 1
+        
+        Sol, P,  Infected = CheckInfect(G, Infected, AM, Num_Neighs, n,  threshold = threshold)
+        #Infected = list(Infected)
+        
         if Sol:
             break
-        if i % n//6 == 0:
+        if i % (n//10) == 0:
             print(f"{P:.2f} Infected")
+    
+    del AM, Num_Neighs
+    gc.collect()
+    
     return Solution, len(Solution)
 
 

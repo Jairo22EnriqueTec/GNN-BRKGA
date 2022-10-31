@@ -11,6 +11,7 @@ from GRAT import GRAT3
 import warnings
 warnings.filterwarnings('ignore')
 import argparse
+import gc
 
 
 parser = argparse.ArgumentParser()
@@ -22,8 +23,9 @@ args = parser.parse_args()
 # Example: python EvaluateFastCover.py -th 0.5 -type "short"
 
 Graphs_short = [
- 'ego-facebook.txt',
- 'gemsec_facebook_artist.txt',
+    'gemsec_facebook_artist.txt',
+    'ego-facebook.txt',
+
  'graph_actors_dat.txt',
  'graph_CA-AstroPh.txt',
  'graph_CA-CondMat.txt',
@@ -114,12 +116,16 @@ for run_name, model, seed in zip(RUNS_LIST, MODELS, SEEDS):
             start_time = time.time()
 
             out = net.grat(dglgraph, dglgraph.ndata['feat']).squeeze(1)
+            
+            del dglgraph
+            gc.collect()
 
             G = graph.to_networkx().to_undirected()
 
             n = len(G.nodes())
 
             _ , minTargetGRAT = FindMinimumTarget(G, out, threshold)
+            
 
             final_time = (time.time() - start_time)
 
@@ -140,7 +146,8 @@ for run_name, model, seed in zip(RUNS_LIST, MODELS, SEEDS):
             })
 
             pd.DataFrame(records).to_csv(PATH_SAVE_RESULTS + NAME_SAVE_RESULTS +"_" + dt_string + ".csv")
-
+            gc.collect()
+            
             c+=1
 print(f"Evaluation has finnished successfully. \nData saved in {PATH_SAVE_RESULTS}")
 
