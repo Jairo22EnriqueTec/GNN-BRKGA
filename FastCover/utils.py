@@ -7,21 +7,29 @@ from create_dataset import CreateDataset
 import gc
 
 def size(V):
-    return np.dot(V, np.ones(len(V)))
+    return np.dot(V, np.ones(len(V), dtype = "int32"))
 
-def CheckInfect(G, Infected, AM, Num_Neighs, n, threshold = 0.5):    
-   
+def CheckInfect(G, Infected, Num_Neighs, Num_Neighs_Infected, Can_Sum, n, threshold = 0.5):    
     InfectedTemp = np.array([])
-    #"""
     while size(InfectedTemp) != size(Infected):
         InfectedTemp = Infected.copy()
-        New = ((np.array(np.dot(AM, Infected.T))[0] / np.array(Num_Neighs)) > threshold)
-        if np.all(New[0] == Infected):
-            break
-        Infected += New[0]
-        Infected[Infected>1] = 1
-        
-    return size(Infected) == n, size(Infected)/n, Infected
+
+        for Inf in np.where((Infected * Can_Sum) == 1)[0]:
+            #print(f"Nodo inf act {Inf}")
+            Temp = np.zeros(n, dtype = "int16")
+            Temp[np.array(list(nx.neighbors(G, Inf)))] = 1
+
+            # A cada vecino del nodo infectado actual se le suma 1 si están conectados a este nodo
+            Num_Neighs_Infected += Temp
+            # El nodo infectado actual ya no puede sumar puesto ya ha sumado a todos sus vecinos un nodo infectado
+            Can_Sum[Inf] = 0
+            # si el número el ratio de vecinos infectados supera el umbral, dichos nodos se infectan, si no, no suma nada
+
+            Infected += (Num_Neighs_Infected/Num_Neighs >= threshold)
+
+            Infected[Infected>1]=1
+    return size(Infected) == n, size(Infected)/n, Infected, Can_Sum
+
 
 def FindMinimumTarget(G, out = None, threshold = 0.5):
     """
@@ -34,22 +42,18 @@ def FindMinimumTarget(G, out = None, threshold = 0.5):
     
     Solution = []
     n = len(G.nodes())
-
+    
+    Num_Neighs = np.array(nx.degree(G)).T[1]
+    Num_Neighs_Infected = np.zeros(n, dtype = "int16")
+    Can_Sum = np.ones(n, dtype = "int16")
     
     Infected = np.zeros(n, dtype = "int16")
-    
-    AM = nx.adjacency_matrix(G).todense()
-    AM = np.matrix(AM, dtype = "int16")
-    
-    Num_Neighs = size(AM)
-    Num_Neighs = np.array(Num_Neighs, dtype = "int16")
     
     if out == None:
         out_ = Num_Neighs.copy()
     else:
         out_ = out.detach().numpy().copy()
     
-    #G = graph.to_networkx()
     for i in range(n):
 
         Inf = np.argmax(out_)
@@ -61,16 +65,12 @@ def FindMinimumTarget(G, out = None, threshold = 0.5):
         Solution.append(Inf)
         Infected[Inf] = 1
         
-        Sol, P,  Infected = CheckInfect(G, Infected, AM, Num_Neighs, n,  threshold = threshold)
-        #Infected = list(Infected)
+        Sol, P, Infected, Can_Sum = CheckInfect(G, Infected, Num_Neighs, Num_Neighs_Infected, Can_Sum, n,  threshold = threshold)
         
         if Sol:
             break
         if i % (n//10) == 0:
             print(f"{P:.2f} Infected")
-    
-    del AM, Num_Neighs
-    gc.collect()
     
     return Solution, len(Solution)
 

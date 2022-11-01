@@ -23,6 +23,10 @@ args = parser.parse_args()
 # Example: python EvaluateFastCover.py -th 0.5 -type "short"
 
 Graphs_short = [
+    'graph_football.txt',
+ 'graph_jazz.txt',
+ 'graph_karate.txt',
+    'graph_CA-CondMat.txt',
     'gemsec_facebook_artist.txt',
     'ego-facebook.txt',
 
@@ -34,9 +38,6 @@ Graphs_short = [
  'graph_CA-HepTh.txt',
  'graph_dolphins.txt',
  'graph_Email-Enron.txt',
- 'graph_football.txt',
- 'graph_jazz.txt',
- 'graph_karate.txt',
  'graph_ncstrlwg2.txt',
  'soc-gplus.txt',
  'socfb-Brandeis99.txt',
