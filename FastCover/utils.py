@@ -39,21 +39,27 @@ def FindMinimumTarget(G, out = None, threshold = 0.5):
     threshold = 0.5 - umbral de infección
     if out = None --> MDH
     """
+    #G.remove_nodes_from(list(nx.isolates(G)))
     
-    Solution = []
+    Solution = []#list(nx.isolates(G))
     n = len(G.nodes())
+    Isolates = list(nx.isolates(G))
     
     Num_Neighs = np.array(nx.degree(G)).T[1]
     Num_Neighs_Infected = np.zeros(n, dtype = "int16")
     Can_Sum = np.ones(n, dtype = "int16")
     
+    Can_Sum[Isolates] = 0
+    
     Infected = np.zeros(n, dtype = "int16")
+    Infected[Isolates] = 1
     
     if out == None:
         out_ = Num_Neighs.copy()
     else:
         out_ = out.detach().numpy().copy()
     
+    #G = graph.to_networkx()
     for i in range(n):
 
         Inf = np.argmax(out_)
@@ -66,14 +72,16 @@ def FindMinimumTarget(G, out = None, threshold = 0.5):
         Infected[Inf] = 1
         
         Sol, P, Infected, Can_Sum = CheckInfect(G, Infected, Num_Neighs, Num_Neighs_Infected, Can_Sum, n,  threshold = threshold)
+        #print(Can_Sum)
+        #Infected = list(Infected)
         
         if Sol:
             break
         if i % (n//10) == 0:
             print(f"{P:.2f} Infected")
+    #gc.collect()
     
     return Solution, len(Solution)
-
 
 def get_rev_dgl(graph, feature_type='0', feature_dim=None, is_directed=False, use_cuda=False):
     """get dgl graph from igraph

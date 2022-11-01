@@ -83,7 +83,6 @@ for run_name in RUNS_LIST:
     MODELS.append(run_name.split("_")[0])
     
 records = []
-Graphs = [Graphs_short[11]]
 Total = len(Graphs)
     
 for run_name, model, seed in zip(RUNS_LIST, MODELS, SEEDS):
