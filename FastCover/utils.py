@@ -39,10 +39,10 @@ def FindMinimumTarget(G, out = None, threshold = 0.5):
     threshold = 0.5 - umbral de infección
     if out = None --> MDH
     """
-    
-    Solution = []#list(nx.isolates(G))
-    n = len(G.nodes())
     Isolates = list(nx.isolates(G))
+    Solution = Isolates
+    n = len(G.nodes())
+    
     
     Num_Neighs = np.array(nx.degree(G)).T[1]
     Num_Neighs_Infected = np.zeros(n, dtype = "int16")
@@ -113,55 +113,6 @@ def gen_one_feature(graph, feature_dim):
 FEATURE_TYPE_DICT = {
     "1": gen_one_feature,
 }
-
-def MDH(G, threshold = 0.5, print_ =False):
-    """
-    Aplica la Heurística del Grado Mínimo para obtener el conjunto 
-    más pequeño posible de nodos.
-    
-    In:
-    G - Grafo networkx
-    threshold = 0.5 - Umbral de infección
-    print_ = False - Mostrar avance de infección
-    
-    out:
-    solution - Conjunto mínimo encontrado de nodos infectados
-    """
-    
-    NodesDegree = np.array(nx.degree(G))
-    Infected = [k for k in nx.isolates(G)]
-    # Si llega a existir nodos aislados, estos harán que el método sea trivial
-    # Por eso los infectados iniciales son los aislados
-    Solution = []
-    while len(NodesDegree) != 0 and len(Infected) != len(G.nodes()):
-
-        posMaxDegreeNode = np.argmax(NodesDegree.T[1])
-        MaxDegreeNode = NodesDegree[posMaxDegreeNode][0]
-
-        NodesDegree = np.delete(NodesDegree, posMaxDegreeNode, axis=0)
-
-        Solution.append(MaxDegreeNode)
-        Infected.append(MaxDegreeNode)
-            
-        InfectedTemp = []
-        while len(InfectedTemp) != len(Infected):
-            InfectedTemp = Infected.copy()
-            for Inf in InfectedTemp:
-                for neighborL1 in nx.neighbors(G, Inf):
-
-                    if neighborL1 in Infected:
-                        continue
-
-                    TotalNeighbors = [v for v in nx.neighbors(G, neighborL1)]
-                    NeighborsInfedted = [v for v in TotalNeighbors if v in Infected]
-
-                    ratio = len(NeighborsInfedted)/len(TotalNeighbors)
-                    if ratio > threshold:
-                        Infected.append(neighborL1)
-                        NodesDegree = np.delete(NodesDegree, np.where(NodesDegree.T[0] == neighborL1)[0], axis = 0)
-        if print_:
-            print(f"{len(Infected)/len(G.nodes()):.3f} infectado")
-    return Solution, len(Infected)
 
 def Convert2DataSet(Graphs, Optimals):
     g = []
