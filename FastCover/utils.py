@@ -28,7 +28,7 @@ def CheckInfect(G, Infected, Num_Neighs, Num_Neighs_Infected, Can_Sum, n, thresh
             Infected += (Num_Neighs_Infected/Num_Neighs >= threshold)
 
             Infected[Infected>1]=1
-    return size(Infected) == n, size(Infected)/n, Infected, Can_Sum
+    return size(Infected) == n, size(Infected)/n#, Infected, Can_Sum
 
 
 def FindMinimumTarget(G, out = None, threshold = 0.5):
@@ -39,7 +39,6 @@ def FindMinimumTarget(G, out = None, threshold = 0.5):
     threshold = 0.5 - umbral de infección
     if out = None --> MDH
     """
-    #G.remove_nodes_from(list(nx.isolates(G)))
     
     Solution = []#list(nx.isolates(G))
     n = len(G.nodes())
@@ -59,11 +58,10 @@ def FindMinimumTarget(G, out = None, threshold = 0.5):
     else:
         out_ = out.detach().numpy().copy()
     
-    #G = graph.to_networkx()
+    Order_Node_Degree = np.argsort(-out_)
+    
     for i in range(n):
-
-        Inf = np.argmax(out_)
-        out_ = np.delete(out_, Inf)
+        Inf = Order_Node_Degree[i]
 
         if Infected[Inf] == 1:
             continue
@@ -71,16 +69,15 @@ def FindMinimumTarget(G, out = None, threshold = 0.5):
         Solution.append(Inf)
         Infected[Inf] = 1
         
-        Sol, P, Infected, Can_Sum = CheckInfect(G, Infected, Num_Neighs, Num_Neighs_Infected, Can_Sum, n,  threshold = threshold)
-        #print(Can_Sum)
-        #Infected = list(Infected)
+        # Modifica todas los vectores Infected, Num_Neighs_Infected y Can_Sum por su ubicación en memoria
+        Sol, P = CheckInfect(G, Infected, Num_Neighs, Num_Neighs_Infected, Can_Sum, n,  threshold = threshold)
         
         if Sol:
             break
-        if i % (n//10) == 0:
+        if i % (n//20) == 0:
             print(f"{P:.2f} Infected")
-    #gc.collect()
-    
+    print(f"1.00 Infected")
+    print()
     return Solution, len(Solution)
 
 def get_rev_dgl(graph, feature_type='0', feature_dim=None, is_directed=False, use_cuda=False):

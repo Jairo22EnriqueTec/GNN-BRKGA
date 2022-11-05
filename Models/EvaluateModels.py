@@ -106,17 +106,18 @@ for run_name, model, seed in zip(RUNS_LIST, MODELS, SEEDS):
             
             print("\nStarting infection\n")
 
-            start_time = time.time()
-
-            out = net(data.x, data.edge_index).max(1)[0]
-
             G = graph.to_networkx().to_undirected()
 
             n = len(G.nodes())
+            
+            start_time = time.time()
 
+            out = net(data.x, data.edge_index).max(1)[0]
+         
             _ , minTargetGRAT = FindMinimumTarget(G, out, threshold)
 
             final_time = (time.time() - start_time)
+            
             print()
             print(f"{c}/{Total} Graph: {name}")
             print(f"Best Target Set length: {minTargetGRAT} out of {n}")

@@ -205,8 +205,10 @@ void evaluate(Individual& ind) {
         (ind.target_set).insert(options[pos].node);
         input.insert(options[pos].node);
         member[options[pos].node] = true;
+
         finished = diffusion(input, member, covered_by, options[pos].node);
     }
+    
     //bool check = diffusion_check(target_set);
     //if (not check) cout << "OHOOHOHOOHOHOHOHOH" << endl;
     ind.target_set_size = int((ind.target_set).size());
@@ -296,6 +298,8 @@ int main( int argc, char **argv ) {
             exit(0);
         }
 
+        
+
         double ctime;
         vector<Individual> population(population_size);
         for (int pi = 0; pi < population_size; ++pi) {
@@ -362,10 +366,12 @@ int main( int argc, char **argv ) {
             ctime = double(current_end - start) / CLOCKS_PER_SEC;
         }   
         if (not tuning) {
-            //for (set<int>::iterator sit = (population[0].target_set).begin(); sit != (population[0].target_set).end(); ++sit) cout << " " << *sit;
-            //cout << endl;
+            cout << "Solución óptima:\n" <<endl;
+
+            for (set<int>::iterator sit = (population[0].target_set).begin(); sit != (population[0].target_set).end(); ++sit) cout << " " << *sit;
+            cout << endl;
             //cout << "aqui"<< endl;
-            std::ofstream outFile("../FastCover/data/ER_graphs/test/optimal/ER_17.txt");
+            std::ofstream outFile("../FastCover/data/compare_dolphins.txt");
             for (const auto &e : population[0].target_set) outFile << e << "\n";
         }
         if (not tuning) cout << "end trial " << trial + 1 << endl;

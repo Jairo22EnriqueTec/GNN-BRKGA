@@ -24,8 +24,8 @@ args = parser.parse_args()
 
 Graphs_short = [
     'graph_football.txt',
- 'graph_jazz.txt',
- 'graph_karate.txt',
+    'graph_jazz.txt',
+    'graph_karate.txt',
     'graph_CA-CondMat.txt',
     'gemsec_facebook_artist.txt',
     'ego-facebook.txt',
