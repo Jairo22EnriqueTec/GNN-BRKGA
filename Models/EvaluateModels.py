@@ -9,7 +9,6 @@ import pandas as pd
 import sys
 sys.path.append("../FastCover/")
 from utils import *
-from GRAT import GRAT3
 import warnings
 warnings.filterwarnings('ignore')
 import argparse

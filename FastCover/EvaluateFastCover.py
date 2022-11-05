@@ -113,22 +113,21 @@ for run_name, model, seed in zip(RUNS_LIST, MODELS, SEEDS):
             dglgraph = get_rev_dgl(graph, FEATURE_TYPE, input_dim, directed_test, use_cuda)
             
             print("\nStarting infection\n")
-
-            start_time = time.time()
-
-            out = net.grat(dglgraph, dglgraph.ndata['feat']).squeeze(1)
             
-            del dglgraph
-            gc.collect()
-
             G = graph.to_networkx().to_undirected()
 
             n = len(G.nodes())
 
+            start_time = time.time()
+
+            out = net.grat(dglgraph, dglgraph.ndata['feat']).squeeze(1)
+
             _ , minTargetGRAT = FindMinimumTarget(G, out, threshold)
-            
 
             final_time = (time.time() - start_time)
+            
+            del dglgraph
+            gc.collect()
 
             print(f"{c}/{Total} Graph: {name}")
             print(f"Best Target Set length: {minTargetGRAT} out of {n}")
