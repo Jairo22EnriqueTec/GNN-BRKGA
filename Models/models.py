@@ -1,11 +1,13 @@
 import torch.nn as nn
 import torch_geometric.nn as geom_nn
+import torch.nn.functional as F
 
 gnn_layer_by_name = {
     "GCN": geom_nn.GCNConv,
     "GAT": geom_nn.GATConv,
     "GraphConv": geom_nn.GraphConv,
     "SAGE": geom_nn.SAGEConv,
+    "GIN": geom_nn.GINConv
 }
 
 class GNNModel(nn.Module):
@@ -54,4 +56,4 @@ class GNNModel(nn.Module):
                 x = l(x, edge_index)
             else:
                 x = l(x)
-        return x
+        return F.log_softmax(x, dim=1)

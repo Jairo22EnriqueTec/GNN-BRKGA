@@ -129,10 +129,16 @@ bool diffusion(set<int>& input, vector<bool>& member, vector<int>& covered_by, i
     int n_of_vertices_covered = int(input.size());
     while (int(to_add.size()) > 0) {
         set<int> new_to_add;
+        // comienzas infectando el nuevo nodo y haces la difusión
         for (set<int>::iterator sit = to_add.begin(); sit != to_add.end(); ++sit) {
+            // repasas cada vecino de ese nuevo nodo
             for (set<int>::iterator sit2 = neigh[*sit].begin(); sit2 != neigh[*sit].end(); ++sit2) {
+                // si no está infectado
                 if (not member[*sit2]) {
+                    // se incrementa el número de vecinos infectados que tiene en 1 porque
+                    // está conectado a sit
                     ++covered_by[*sit2];
+                    // se revisa si cumple el requisito para infectarse
                     if (covered_by[*sit2] >= required[*sit2]) {
                         new_to_add.insert(*sit2);
                         input.insert(*sit2);
@@ -157,7 +163,6 @@ int first_pos_not_member(vector<Option>& options, vector<bool>& member) {
 }
 
 bool diffusion_check(set<int> to_add) {
-
 
     vector<int> covered_by(n_of_vertices, 0);
     vector<bool> done(n_of_vertices, false);
@@ -189,23 +194,31 @@ bool diffusion_check(set<int> to_add) {
 void evaluate(Individual& ind) {
 
     vector<Option> options(n_of_vertices);
+    // se multiplica el valor del nodo por el grado del nodo
+    // si es MDH, entonces todos los individuos tienen la misma prob
     for (int i = 0; i < n_of_vertices; ++i) {
         options[i].node = i;
         options[i].value = double(degree[i])*(ind.vec)[i];
     }
+    // se ordena la lista para recorrerse del mayor al menor
     sort(options.begin(), options.end(), option_compare);
-
+    
+    //
     vector<int> covered_by(n_of_vertices, 0);
     bool finished = false;
     set<int> input;
     (ind.target_set).clear();
+    //los nodos infectados
     vector<bool> member(n_of_vertices, false);
     while (not finished) {
+        // se extraé el nodo mayor que no esté infectado
         int pos = first_pos_not_member(options, member);
+        // este forma parte de la solución final
         (ind.target_set).insert(options[pos].node);
         input.insert(options[pos].node);
+        // este nodo se infecta
         member[options[pos].node] = true;
-
+        // se llama la función para ver si se difunde a toda la red
         finished = diffusion(input, member, covered_by, options[pos].node);
     }
     
@@ -261,6 +274,7 @@ int main( int argc, char **argv ) {
         neigh[u - 1].insert(v - 1);
         neigh[v - 1].insert(u - 1);
     }
+
     indata.close();
     
     degree = vector<int>(n_of_vertices);
