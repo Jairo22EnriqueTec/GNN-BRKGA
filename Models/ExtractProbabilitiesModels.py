@@ -85,8 +85,9 @@ Total = len(Graphs)
 def save(name, model, out):
     with open(f'{PATH_SAVE_RESULTS}{model}_{name}', 'w') as f:
         out = out.detach().numpy()
+        e = 0.0001
         for o in out:
-            f.write(str(np.round(o, 6)))
+            f.write(str(np.round(o + e, 6)))
             f.write("\n")
 
     

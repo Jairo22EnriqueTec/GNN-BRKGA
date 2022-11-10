@@ -124,8 +124,8 @@ void evaluate(Individual& ind) {
     // si es MDH, entonces todos los individuos tienen la misma prob
     for (int i = 0; i < n_of_vertices; ++i) {
         options[i].node = i;
-        //options[i].value = double(degree[i])*(ind.vec)[i];
-        options[i].value = (ind.vec)[i];
+        options[i].value = double(degree[i])*(ind.vec)[i];
+        //options[i].value = (ind.vec)[i];
     }
     // se ordena la lista para recorrerse del mayor al menor
     sort(options.begin(), options.end(), option_compare);
@@ -156,10 +156,10 @@ void evaluate(Individual& ind) {
 
 int main() {
 
-    string model = "SAGE";
-    string directory = "Models";
-    //string PATH_TO_SAVE = "../FastCover/results/FastCoverResults.txt";
-    string PATH_TO_SAVE = "../Models/results/SAGEResults.txt";
+    string model = "FC";
+    string directory = "FastCover";
+    string PATH_TO_SAVE = "../FastCover/results/FastCoverResults_MDH.txt";
+    //string PATH_TO_SAVE = "../Models/results/GraphConvResults_MDH.txt";
 
     vector<int> resultados (graphs.size());
     vector<int> graphsize (graphs.size());
