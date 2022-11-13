@@ -63,6 +63,42 @@ vector<string> graphs = {"graph_football",
     "musae_git"};
 
 
+vector<string> graphs_erdos = {"ER_10000_0",
+ "ER_10000_1",
+ "ER_10000_2",
+ "ER_10000_3",
+ "ER_10000_4",
+ "ER_20000_0",
+ "ER_20000_1",
+ "ER_20000_2",
+ "ER_20000_3",
+ "ER_20000_4",
+ "ER_2000_0",
+ "ER_2000_1",
+ "ER_2000_2",
+ "ER_2000_3",
+ "ER_2000_4",
+ "ER_2000_5",
+ "ER_2000_6",
+ "ER_2000_7",
+ "ER_2000_8",
+ "ER_2000_9",
+ "ER_30000_0",
+ "ER_30000_1",
+ "ER_30000_2",
+ "ER_50000_0",
+ "ER_50000_1",
+ "ER_50000_2",
+ "ER_5000_0",
+ "ER_5000_1",
+ "ER_5000_2",
+ "ER_5000_3",
+ "ER_5000_4",
+ "ER_5000_5",
+ "ER_5000_6"
+};
+
+
 // instance data
 int n_of_vertices;
 int n_of_arcs;
@@ -157,17 +193,19 @@ void evaluate(Individual& ind) {
 int main() {
 
     string model = "FC";
-    string directory = "FastCover";
-    string PATH_TO_SAVE = "../FastCover/results/FastCoverResults_MDH.txt";
-    //string PATH_TO_SAVE = "../Models/results/GraphConvResults_MDH.txt";
+    string directory = "Fastcover";
+    string PATH_TO_SAVE = "../FastCover/results/FastCoverResults_MDH_erdos.txt";
+    //string PATH_TO_SAVE = "../Models/results/SAGEResults_MDH_erdos.txt";
+    //string PATH_TO_SAVE = "../MDHResults_erdos.txt";
 
-    vector<int> resultados (graphs.size());
-    vector<int> graphsize (graphs.size());
-    vector<double> ElapsedTime (graphs.size());
+    vector<int> resultados (graphs_erdos.size());
+    vector<int> graphsize (graphs_erdos.size());
+    vector<double> ElapsedTime (graphs_erdos.size());
 
-    for (int j = 0; j < graphs.size(); ++j) {
+    for (int j = 0; j < graphs_erdos.size(); ++j) {
 
-        string inputFile = "instances/dimacs/"+graphs[j]+".dimacs";
+        //string inputFile = "instances/dimacs/"+graphs[j]+".dimacs";
+        string inputFile = "instances/Erdos/dimacs/"+graphs_erdos[j]+".dimacs";
 
         // reading an instance
         cout << "\nCargando "+inputFile+" ..." << endl;
@@ -200,7 +238,7 @@ int main() {
         }
 
 
-        string vecfile = "../"+directory+"/probabilidades/"+model+"_"+graphs[j]+".txt";
+        string vecfile = "../"+directory+"/probabilidades/erdos/"+model+"_"+graphs_erdos[j]+".txt";
         cout << "\nCargando vector de probabilidades "+vecfile+" ..." << endl;
         indata.open(vecfile.c_str());
         if(!indata) { // file couldn't be opened
@@ -232,8 +270,8 @@ int main() {
 
     ofstream myfile;
     myfile.open (PATH_TO_SAVE);
-    for (int j = 0; j < graphs.size(); ++j) {
-        myfile << graphs[j]+","+std::to_string(resultados[j])+
+    for (int j = 0; j < graphs_erdos.size(); ++j) {
+        myfile << graphs_erdos[j]+","+std::to_string(resultados[j])+
         ","+std::to_string(ElapsedTime[j])+","+std::to_string(graphsize[j])+"\n";
     }
     

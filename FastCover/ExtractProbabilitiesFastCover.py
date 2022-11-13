@@ -59,7 +59,7 @@ Graphs_large = ['Amazon0302.txt',
  'deezer_HR.txt',
  'musae_git.txt']
 
-PATH_TO_TEST = "../BRKGA/instances/txt/"
+PATH_TO_TEST = "../BRKGA/instances/Erdos/txt/"
 
 if args.Type == "short":
     Graphs = Graphs_short
@@ -71,7 +71,7 @@ else:
     raise NameError("Only: 'short', 'large' or 'full")
 
 PATH_SAVE_TRAINS = "runs/"
-PATH_SAVE_RESULTS = 'probabilidades/'
+PATH_SAVE_RESULTS = 'probabilidades/erdos/'
 
 NAME_SAVE_RESULTS = 'FastCover' #Change this
 
