@@ -245,6 +245,28 @@ void generate_all_ones_solution(Individual& ind) {
 Main function
 **********/
 
+vector<string> graphs = {"graph1__2.25_1000_10.txt",
+ "graph1__2.25_1000_20.txt",
+ "graph1__2.25_1000_30.txt",
+ "graph1__2.25_1000_5.txt",
+ "graph1__2.5_1000_10.txt",
+ "graph1__2.5_1000_20.txt",
+ "graph1__2.5_1000_30.txt",
+ "graph1__2.5_1000_5.txt",
+ "graph1__2.75_1000_10.txt",
+ "graph1__2.75_1000_20.txt",
+ "graph1__2.75_1000_30.txt",
+ "graph1__2.75_1000_5.txt",
+ "graph1__2_1000_10.txt",
+ "graph1__2_1000_20.txt",
+ "graph1__2_1000_30.txt",
+ "graph1__2_1000_5.txt",
+ "graph1__3_1000_10.txt",
+ "graph1__3_1000_20.txt",
+ "graph1__3_1000_30.txt",
+ "graph1__3_1000_5.txt"};
+
+
 int main( int argc, char **argv ) {
 
     read_parameters(argc,argv);
@@ -252,170 +274,179 @@ int main( int argc, char **argv ) {
     std::cout << std::setprecision(3) << std::fixed;
 
     // initializing the random number generator. A random number between 0 and 1 is obtained with: distribution(generator);
-    unsigned seed1 = chrono::system_clock::now().time_since_epoch().count();
-    std::default_random_engine generator(seed1);
-    std::uniform_real_distribution<double> distribution(0,1);
+    for (int j = 0; j < graphs.size(); ++j) {
 
-    // reading an instance
-    ifstream indata;
-    indata.open(inputFile.c_str());
-    if(!indata) { // file couldn't be opened
-        if (not tuning) cout << "Error: file could not be opened" << endl;
-        exit(1);
-    }
-
-    string s1, s2;
-    indata >> s1 >> s2;
-    indata >> n_of_vertices;
-    indata >> n_of_arcs;
-    neigh = vector< set<int> >(n_of_vertices);
-    int u, v;
-    while(indata >> s1 >> u >> v) {
-        neigh[u - 1].insert(v - 1);
-        neigh[v - 1].insert(u - 1);
-    }
-
-    indata.close();
+        unsigned seed1 = chrono::system_clock::now().time_since_epoch().count();
+        std::default_random_engine generator(seed1);
+        std::uniform_real_distribution<double> distribution(0,1);
     
-    degree = vector<int>(n_of_vertices);
-    required = vector<int>(n_of_vertices);
-    for (int i = 0; i < n_of_vertices; i++) {
-        degree[i] = int(neigh[i].size());
-        required[i] = ceil((double)degree[i] / 2);
-    }
 
-    vector<double> target_set_sizes;
-    vector<double> times;
+        // reading an instance
+        inputFile = "./instances/scalefree/dimacs/"+graphs[j];
 
-    // looping over all trials
-    for (int trial = 0; trial < trials; trial++) {
+        cout << "loading:" << inputFile << endl;
 
-        target_set_sizes.push_back(0.0);
-        times.push_back(0.0);
-
-        if (not tuning) cout << "start trial " << trial + 1 << endl;
-
-        // the computation time starts now
-        clock_t start = clock();
-
-        int best_target_set_size = n_of_vertices;
-
-        int n_elites = int(double(population_size)*elite_proportion);
-        if (n_elites < 1) n_elites = 1;
-
-        int n_mutants = int(double(population_size)*mutant_proportion);
-        if (n_mutants < 1) n_mutants = 1;
-
-        int n_offspring = population_size - n_elites - n_mutants;
-        if (n_offspring < 1) {
-            if (not tuning) cout << "OHOHOH: wrong parameter settings" << endl;
-            exit(0);
+        ifstream indata;
+        indata.open(inputFile.c_str());
+        if(!indata) { // file couldn't be opened
+            if (not tuning) cout << "Error: file could not be opened" << endl;
+            exit(1);
         }
 
+        string s1, s2;
+        indata >> s1 >> s2;
+        indata >> n_of_vertices;
+        indata >> n_of_arcs;
+        neigh = vector< set<int> >(n_of_vertices);
+        int u, v;
+        while(indata >> s1 >> u >> v) {
+            neigh[u - 1].insert(v - 1);
+            neigh[v - 1].insert(u - 1);
+        }
+
+        indata.close();
         
-
-        double ctime;
-        vector<Individual> population(population_size);
-        for (int pi = 0; pi < population_size; ++pi) {
-            if (pi == 0 and seeding == 1) generate_all_ones_solution(population[pi]);
-            else generate_random_solution(population[pi], generator, distribution);
-            if (population[pi].target_set_size < best_target_set_size) {
-                best_target_set_size = population[pi].target_set_size;
-                clock_t current_init = clock();
-                ctime = double(current_init - start) / CLOCKS_PER_SEC;
-                target_set_sizes[trial] = double(best_target_set_size);
-                times[trial] = ctime;
-                if (not tuning) cout << "target set size " << best_target_set_size << "\ttime " << ctime << endl;
-            }
+        degree = vector<int>(n_of_vertices);
+        required = vector<int>(n_of_vertices);
+        for (int i = 0; i < n_of_vertices; i++) {
+            degree[i] = int(neigh[i].size());
+            required[i] = ceil((double)degree[i] / 2);
         }
-        sort(population.begin(), population.end(), individual_compare);
 
-        clock_t current = clock();
-        ctime = double(current - start) / CLOCKS_PER_SEC;
-        while (ctime < computation_time_limit) {
-            vector<Individual> new_population(population_size);
-            for (int ic = 0; ic < n_elites; ++ic) {
-                new_population[ic].vec = population[ic].vec;
-                new_population[ic].target_set_size = population[ic].target_set_size;
-                new_population[ic].target_set = population[ic].target_set;
+        vector<double> target_set_sizes;
+        vector<double> times;
+
+        // looping over all trials
+        for (int trial = 0; trial < trials; trial++) {
+
+            target_set_sizes.push_back(0.0);
+            times.push_back(0.0);
+
+            if (not tuning) cout << "start trial " << trial + 1 << endl;
+
+            // the computation time starts now
+            clock_t start = clock();
+
+            int best_target_set_size = n_of_vertices;
+
+            int n_elites = int(double(population_size)*elite_proportion);
+            if (n_elites < 1) n_elites = 1;
+
+            int n_mutants = int(double(population_size)*mutant_proportion);
+            if (n_mutants < 1) n_mutants = 1;
+
+            int n_offspring = population_size - n_elites - n_mutants;
+            if (n_offspring < 1) {
+                if (not tuning) cout << "OHOHOH: wrong parameter settings" << endl;
+                exit(0);
             }
-            for (int ic = 0; ic < n_mutants; ++ic) {
-                generate_random_solution(new_population[n_elites + ic], generator, distribution);
 
-                if (new_population[n_elites + ic].target_set_size < best_target_set_size) {
-                    best_target_set_size = new_population[n_elites + ic].target_set_size;
-                    clock_t current_mut = clock();
-                    ctime = double(current_mut - start) / CLOCKS_PER_SEC;
+            
+
+            double ctime;
+            vector<Individual> population(population_size);
+            for (int pi = 0; pi < population_size; ++pi) {
+                if (pi == 0 and seeding == 1) generate_all_ones_solution(population[pi]);
+                else generate_random_solution(population[pi], generator, distribution);
+                if (population[pi].target_set_size < best_target_set_size) {
+                    best_target_set_size = population[pi].target_set_size;
+                    clock_t current_init = clock();
+                    ctime = double(current_init - start) / CLOCKS_PER_SEC;
                     target_set_sizes[trial] = double(best_target_set_size);
                     times[trial] = ctime;
                     if (not tuning) cout << "target set size " << best_target_set_size << "\ttime " << ctime << endl;
                 }
             }
-            for (int ic = 0; ic < n_offspring; ++ic) {
-                double rnum1 = distribution(generator);
-                int first_parent = produce_random_integer(n_elites, rnum1);
-                double rnum2 = distribution(generator);
-                int second_parent = n_elites + produce_random_integer(population_size - n_elites, rnum2);
-                new_population[n_elites + n_mutants + ic].vec = vector<double>(n_of_vertices);
-                for (int i = 0; i < n_of_vertices; ++i) {
-                    double rnum = distribution(generator);
-                    if (rnum <= elite_inheritance_probability) (new_population[n_elites + n_mutants + ic].vec)[i] = (population[first_parent].vec)[i];
-                    else (new_population[n_elites + n_mutants + ic].vec)[i] = (population[second_parent].vec)[i];
-                }
-                evaluate(new_population[n_elites + n_mutants + ic]);
-
-                if (new_population[n_elites + n_mutants + ic].target_set_size < best_target_set_size) {
-                    best_target_set_size = new_population[n_elites + n_mutants + ic].target_set_size;
-                    clock_t current_off = clock();
-                    ctime = double(current_off - start) / CLOCKS_PER_SEC;
-                    target_set_sizes[trial] = double(best_target_set_size);
-                    times[trial] = ctime;
-                    if (not tuning) cout << "target set size " << best_target_set_size << "\ttime " << ctime << endl;
-                }
-            }
-            population.clear();
-            population = new_population;
             sort(population.begin(), population.end(), individual_compare);
-            clock_t current_end = clock();
-            ctime = double(current_end - start) / CLOCKS_PER_SEC;
-        }   
-        if (not tuning) {
-            cout << "Solución óptima:\n" <<endl;
 
-            for (set<int>::iterator sit = (population[0].target_set).begin(); sit != (population[0].target_set).end(); ++sit) cout << " " << *sit;
-            cout << endl;
-            //cout << "aqui"<< endl;
-            std::ofstream outFile("../FastCover/data/compare_dolphins.txt");
-            for (const auto &e : population[0].target_set) outFile << e << "\n";
+            clock_t current = clock();
+            ctime = double(current - start) / CLOCKS_PER_SEC;
+            while (ctime < computation_time_limit) {
+                vector<Individual> new_population(population_size);
+                for (int ic = 0; ic < n_elites; ++ic) {
+                    new_population[ic].vec = population[ic].vec;
+                    new_population[ic].target_set_size = population[ic].target_set_size;
+                    new_population[ic].target_set = population[ic].target_set;
+                }
+                for (int ic = 0; ic < n_mutants; ++ic) {
+                    generate_random_solution(new_population[n_elites + ic], generator, distribution);
+
+                    if (new_population[n_elites + ic].target_set_size < best_target_set_size) {
+                        best_target_set_size = new_population[n_elites + ic].target_set_size;
+                        clock_t current_mut = clock();
+                        ctime = double(current_mut - start) / CLOCKS_PER_SEC;
+                        target_set_sizes[trial] = double(best_target_set_size);
+                        times[trial] = ctime;
+                        if (not tuning) cout << "target set size " << best_target_set_size << "\ttime " << ctime << endl;
+                    }
+                }
+                for (int ic = 0; ic < n_offspring; ++ic) {
+                    double rnum1 = distribution(generator);
+                    int first_parent = produce_random_integer(n_elites, rnum1);
+                    double rnum2 = distribution(generator);
+                    int second_parent = n_elites + produce_random_integer(population_size - n_elites, rnum2);
+                    new_population[n_elites + n_mutants + ic].vec = vector<double>(n_of_vertices);
+                    for (int i = 0; i < n_of_vertices; ++i) {
+                        double rnum = distribution(generator);
+                        if (rnum <= elite_inheritance_probability) (new_population[n_elites + n_mutants + ic].vec)[i] = (population[first_parent].vec)[i];
+                        else (new_population[n_elites + n_mutants + ic].vec)[i] = (population[second_parent].vec)[i];
+                    }
+                    evaluate(new_population[n_elites + n_mutants + ic]);
+
+                    if (new_population[n_elites + n_mutants + ic].target_set_size < best_target_set_size) {
+                        best_target_set_size = new_population[n_elites + n_mutants + ic].target_set_size;
+                        clock_t current_off = clock();
+                        ctime = double(current_off - start) / CLOCKS_PER_SEC;
+                        target_set_sizes[trial] = double(best_target_set_size);
+                        times[trial] = ctime;
+                        if (not tuning) cout << "target set size " << best_target_set_size << "\ttime " << ctime << endl;
+                    }
+                }
+                population.clear();
+                population = new_population;
+                sort(population.begin(), population.end(), individual_compare);
+                clock_t current_end = clock();
+                ctime = double(current_end - start) / CLOCKS_PER_SEC;
+            }   
+            if (not tuning) {
+                cout << "Solución óptima:\n" <<endl;
+
+                for (set<int>::iterator sit = (population[0].target_set).begin(); sit != (population[0].target_set).end(); ++sit) cout << " " << *sit;
+                cout << endl;
+                //cout << "aqui"<< endl;
+                
+                std::ofstream outFile("./instances/scalefree/optimal/"+graphs[j]);
+                for (const auto &e : population[0].target_set) outFile << e << "\n";
+            }
+            if (not tuning) cout << "end trial " << trial + 1 << endl;
         }
-        if (not tuning) cout << "end trial " << trial + 1 << endl;
-    }
 
-    int best_result = std::numeric_limits<int>::max();
-    double r_mean = 0.0;
-    double g_mean = 0.0;
-    for (int i = 0; i < target_set_sizes.size(); i++) {
-        r_mean = r_mean + target_set_sizes[i];
-        g_mean = g_mean + times[i];
-        if (int(target_set_sizes[i]) < best_result) best_result = int(target_set_sizes[i]);
+        int best_result = std::numeric_limits<int>::max();
+        double r_mean = 0.0;
+        double g_mean = 0.0;
+        for (int i = 0; i < target_set_sizes.size(); i++) {
+            r_mean = r_mean + target_set_sizes[i];
+            g_mean = g_mean + times[i];
+            if (int(target_set_sizes[i]) < best_result) best_result = int(target_set_sizes[i]);
+        }
+        r_mean = r_mean / ((double)target_set_sizes.size());
+        g_mean = g_mean / ((double)times.size());
+        double rsd = 0.0;
+        double gsd = 0.0;
+        for (int i = 0; i < target_set_sizes.size(); i++) {
+            rsd = rsd + pow(target_set_sizes[i]-r_mean,2.0);
+            gsd = gsd + pow(times[i]-g_mean,2.0);
+        }
+        rsd = rsd / ((double)(target_set_sizes.size()-1.0));
+        if (rsd > 0.0) {
+            rsd = sqrt(rsd);
+        }
+        gsd = gsd / ((double)(times.size()-1.0));
+        if (gsd > 0.0) {
+            gsd = sqrt(gsd);
+        }
+        if (not tuning) cout << best_result << "\t" << r_mean << "\t" << rsd << "\t" << g_mean << "\t" << gsd<< endl;
+        else cout << target_set_sizes[0] << endl;
     }
-    r_mean = r_mean / ((double)target_set_sizes.size());
-    g_mean = g_mean / ((double)times.size());
-    double rsd = 0.0;
-    double gsd = 0.0;
-    for (int i = 0; i < target_set_sizes.size(); i++) {
-        rsd = rsd + pow(target_set_sizes[i]-r_mean,2.0);
-        gsd = gsd + pow(times[i]-g_mean,2.0);
-    }
-    rsd = rsd / ((double)(target_set_sizes.size()-1.0));
-    if (rsd > 0.0) {
-        rsd = sqrt(rsd);
-    }
-    gsd = gsd / ((double)(times.size()-1.0));
-    if (gsd > 0.0) {
-        gsd = sqrt(gsd);
-    }
-    if (not tuning) cout << best_result << "\t" << r_mean << "\t" << rsd << "\t" << g_mean << "\t" << gsd<< endl;
-    else cout << target_set_sizes[0] << endl;
 }
 
