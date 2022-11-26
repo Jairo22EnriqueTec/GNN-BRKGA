@@ -25,8 +25,6 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-type", "--Type", help = "short, large or full", type = str)
 args = parser.parse_args()
 
-# Example: python EvaluateFastCover.py -th 0.5 -type "short"
-
 Graphs_short = [
     'graph_football.txt',
     'graph_jazz.txt',
@@ -59,7 +57,7 @@ Graphs_large = ['Amazon0302.txt',
  'deezer_HR.txt',
  'musae_git.txt']
 
-PATH_TO_TEST = "../BRKGA/instances/Erdos/txt/"
+PATH_TO_TEST = "../BRKGA/instances/txt/"
 
 if args.Type == "short":
     Graphs = Graphs_short
@@ -70,8 +68,8 @@ elif args.Type == "full":
 else:
     raise NameError("Only: 'short', 'large' or 'full")
 
-PATH_SAVE_TRAINS = "runs/"
-PATH_SAVE_RESULTS = 'probabilidades/erdos/'
+PATH_SAVE_TRAINS = "runs/scalefree/"
+PATH_SAVE_RESULTS = 'probabilidades/scalefree/'
 
 NAME_SAVE_RESULTS = 'FastCover' #Change this
 

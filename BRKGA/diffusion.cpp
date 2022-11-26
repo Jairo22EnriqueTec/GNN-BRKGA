@@ -192,20 +192,20 @@ void evaluate(Individual& ind) {
 
 int main() {
 
-    string model = "FC";
-    string directory = "Fastcover";
-    string PATH_TO_SAVE = "../FastCover/results/FastCoverResults_MDH_erdos.txt";
-    //string PATH_TO_SAVE = "../Models/results/SAGEResults_MDH_erdos.txt";
+    string model = "GraphConv";
+    string directory = "Models";
+    //string PATH_TO_SAVE = "../FastCover/results/scalefree/FastCoverResults_scalefree.txt";
+    string PATH_TO_SAVE = "../Models/results/scalefree/GraphConvResults_scalefree.txt";
     //string PATH_TO_SAVE = "../MDHResults_erdos.txt";
 
-    vector<int> resultados (graphs_erdos.size());
-    vector<int> graphsize (graphs_erdos.size());
-    vector<double> ElapsedTime (graphs_erdos.size());
+    vector<int> resultados (graphs.size());
+    vector<int> graphsize (graphs.size());
+    vector<double> ElapsedTime (graphs.size());
 
-    for (int j = 0; j < graphs_erdos.size(); ++j) {
+    for (int j = 0; j < graphs.size(); ++j) {
 
         //string inputFile = "instances/dimacs/"+graphs[j]+".dimacs";
-        string inputFile = "instances/Erdos/dimacs/"+graphs_erdos[j]+".dimacs";
+        string inputFile = "instances/dimacs/"+graphs[j]+".dimacs";
 
         // reading an instance
         cout << "\nCargando "+inputFile+" ..." << endl;
@@ -238,7 +238,7 @@ int main() {
         }
 
 
-        string vecfile = "../"+directory+"/probabilidades/erdos/"+model+"_"+graphs_erdos[j]+".txt";
+        string vecfile = "../"+directory+"/probabilidades/scalefree/"+model+"_"+graphs[j]+".txt";
         cout << "\nCargando vector de probabilidades "+vecfile+" ..." << endl;
         indata.open(vecfile.c_str());
         if(!indata) { // file couldn't be opened
@@ -270,8 +270,8 @@ int main() {
 
     ofstream myfile;
     myfile.open (PATH_TO_SAVE);
-    for (int j = 0; j < graphs_erdos.size(); ++j) {
-        myfile << graphs_erdos[j]+","+std::to_string(resultados[j])+
+    for (int j = 0; j < graphs.size(); ++j) {
+        myfile << graphs[j]+","+std::to_string(resultados[j])+
         ","+std::to_string(ElapsedTime[j])+","+std::to_string(graphsize[j])+"\n";
     }
     

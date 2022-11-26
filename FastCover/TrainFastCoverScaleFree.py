@@ -488,7 +488,7 @@ dglgraphs = []
 
 for file in TRAIN_LIST:
     print(f"Cargando {PATH_TO_TRAIN+file} ...")
-    graph = igraph.Graph.Read_Ncol(PATH_TO_TRAIN+file, directed = False)
+    graph = igraph.Graph.Read_Edgelist(PATH_TO_TRAIN+file, directed = False)
     #graph = igraph.Graph().Read_Pickle(PATH_TO_TRAIN+file)
     graphs.append(graph)
     

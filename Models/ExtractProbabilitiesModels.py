@@ -50,7 +50,7 @@ Graphs_large = ['Amazon0302.txt',
  'deezer_HR.txt',
  'musae_git.txt']
 
-PATH_TO_TEST = "../BRKGA/instances/Erdos/txt/"
+PATH_TO_TEST = "../BRKGA/instances/txt/"
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 if args.Type == "short":
@@ -62,8 +62,8 @@ elif args.Type == "full":
 else:
     raise NameError("Only: 'short', 'large' or 'full")
 
-PATH_SAVED_TRAINS = "runs/"
-PATH_SAVE_RESULTS = 'probabilidades/erdos/'
+PATH_SAVED_TRAINS = "runs/scalefree/"
+PATH_SAVE_RESULTS = 'probabilidades/scalefree/'
 
 NAME_SAVE_RESULTS = 'Models' #Change this
 
