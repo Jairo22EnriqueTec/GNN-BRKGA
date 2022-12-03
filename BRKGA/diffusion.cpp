@@ -73,29 +73,12 @@ vector<string> graphs_erdos = {"ER_10000_0",
  "ER_20000_2",
  "ER_20000_3",
  "ER_20000_4",
- "ER_2000_0",
- "ER_2000_1",
- "ER_2000_2",
- "ER_2000_3",
- "ER_2000_4",
- "ER_2000_5",
- "ER_2000_6",
- "ER_2000_7",
- "ER_2000_8",
- "ER_2000_9",
  "ER_30000_0",
  "ER_30000_1",
  "ER_30000_2",
  "ER_50000_0",
  "ER_50000_1",
- "ER_50000_2",
- "ER_5000_0",
- "ER_5000_1",
- "ER_5000_2",
- "ER_5000_3",
- "ER_5000_4",
- "ER_5000_5",
- "ER_5000_6"
+ "ER_50000_2"
 };
 
 
@@ -160,8 +143,8 @@ void evaluate(Individual& ind) {
     // si es MDH, entonces todos los individuos tienen la misma prob
     for (int i = 0; i < n_of_vertices; ++i) {
         options[i].node = i;
-        options[i].value = double(degree[i])*(ind.vec)[i];
-        //options[i].value = (ind.vec)[i];
+        //options[i].value = double(degree[i])*(ind.vec)[i];
+        options[i].value = (ind.vec)[i];
     }
     // se ordena la lista para recorrerse del mayor al menor
     sort(options.begin(), options.end(), option_compare);
@@ -192,10 +175,10 @@ void evaluate(Individual& ind) {
 
 int main() {
 
-    string model = "GraphConv";
-    string directory = "Models";
-    //string PATH_TO_SAVE = "../FastCover/results/scalefree/FastCoverResults_scalefree.txt";
-    string PATH_TO_SAVE = "../Models/results/scalefree/GraphConvResults_scalefree.txt";
+    string model = "FC";
+    string directory = "FastCover";
+    string PATH_TO_SAVE = "../FastCover/results/scalefree/justprob/FastCoverResults_scalefree.txt";
+    //string PATH_TO_SAVE = "../Models/results/scalefree/justprob/GCNResults_scalefree.txt";
     //string PATH_TO_SAVE = "../MDHResults_erdos.txt";
 
     vector<int> resultados (graphs.size());

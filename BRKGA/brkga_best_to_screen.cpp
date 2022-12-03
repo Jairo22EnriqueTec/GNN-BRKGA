@@ -244,8 +244,9 @@ void generate_all_ones_solution(Individual& ind) {
 /**********
 Main function
 **********/
-
-vector<string> graphs = {"graph1__2.25_1000_10.txt",
+/*
+vector<string> graphs = {
+    "graph1__2.25_1000_10.txt",
  "graph1__2.25_1000_20.txt",
  "graph1__2.25_1000_30.txt",
  "graph1__2.25_1000_5.txt",
@@ -265,6 +266,48 @@ vector<string> graphs = {"graph1__2.25_1000_10.txt",
  "graph1__3_1000_20.txt",
  "graph1__3_1000_30.txt",
  "graph1__3_1000_5.txt"};
+*/
+
+vector<string> graphs = {
+ "ER_1000_10_0.dimacs",
+ "ER_1000_10_1.dimacs",
+ "ER_1000_10_2.dimacs",
+ "ER_1000_10_3.dimacs",
+ "ER_1000_15_0.dimacs",
+ "ER_1000_15_1.dimacs",
+ "ER_1000_15_2.dimacs",
+ "ER_1000_15_3.dimacs",
+ "ER_1000_20_0.dimacs",
+ "ER_1000_20_1.dimacs",
+ "ER_1000_20_2.dimacs",
+ "ER_1000_20_3.dimacs",
+
+ "ER_2000_10_0.dimacs",
+ "ER_2000_10_1.dimacs",
+ "ER_2000_10_2.dimacs",
+ "ER_2000_10_3.dimacs",
+ "ER_2000_15_0.dimacs",
+ "ER_2000_15_1.dimacs",
+ "ER_2000_15_2.dimacs",
+ "ER_2000_15_3.dimacs",
+ "ER_2000_20_0.dimacs",
+ "ER_2000_20_1.dimacs",
+ "ER_2000_20_2.dimacs",
+ "ER_2000_20_3.dimacs",
+
+ "ER_5000_10_0.dimacs",
+ "ER_5000_10_1.dimacs",
+ "ER_5000_10_2.dimacs",
+ "ER_5000_10_3.dimacs",
+ "ER_5000_15_0.dimacs",
+ "ER_5000_15_1.dimacs",
+ "ER_5000_15_2.dimacs",
+ "ER_5000_15_3.dimacs",
+ "ER_5000_20_0.dimacs",
+ "ER_5000_20_1.dimacs",
+ "ER_5000_20_2.dimacs",
+ "ER_5000_20_3.dimacs"
+ };
 
 
 int main( int argc, char **argv ) {
@@ -282,7 +325,7 @@ int main( int argc, char **argv ) {
     
 
         // reading an instance
-        inputFile = "./instances/scalefree/dimacs/"+graphs[j];
+        inputFile = "./instances/Erdos/dimacs/"+graphs[j];
 
         cout << "loading:" << inputFile << endl;
 
@@ -415,7 +458,7 @@ int main( int argc, char **argv ) {
                 cout << endl;
                 //cout << "aqui"<< endl;
                 
-                std::ofstream outFile("./instances/scalefree/optimal/"+graphs[j]);
+                std::ofstream outFile("./instances/Erdos/train/optimal/"+graphs[j]);
                 for (const auto &e : population[0].target_set) outFile << e << "\n";
             }
             if (not tuning) cout << "end trial " << trial + 1 << endl;

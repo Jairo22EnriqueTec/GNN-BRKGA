@@ -6,7 +6,7 @@ PATH_INSTANCES_TXT = "./BRKGA/instances/Erdos/txt/"
 PATH_INSTANCES_DIMACS = "./BRKGA/instances/Erdos/dimacs/"
 
 def nx2dimacs(g, n, PATH_INSTANCES):
-    dimacs_filename = f"{PATH_INSTANCES}ER_{n}_{Cont}.dimacs"
+    dimacs_filename = f"{PATH_INSTANCES}ER_{n}_20_{Cont}.dimacs"
 
     with open(dimacs_filename, "w") as f:
         # write the header
@@ -16,7 +16,7 @@ def nx2dimacs(g, n, PATH_INSTANCES):
             f.write("e {} {}\n".format(u+1, v+1))
 
 def nx2txt(G, n, PATH_INSTANCES):
-    file = open(f"{PATH_INSTANCES}ER_{n}_{Cont}.txt", 'w')
+    file = open(f"{PATH_INSTANCES}ER_{n}_20_{Cont}.txt", 'w')
     c = 0
     for i,j in G.edges():
         file.write(f"{int(i)} {int(j)}")
@@ -25,16 +25,18 @@ def nx2txt(G, n, PATH_INSTANCES):
     file.close()
 
 
-NumGrafos = [10, 7, 5, 5, 3, 3]
-lens = [2_000, 5_000, 10_000, 20_000, 30_000, 50_000]
+NumGrafos = [4, 4, 4, 2, 2, 1, 1]
+lens = [1_000, 2_000, 5_000, 10_000, 20_000, 30_000, 50_000]
 INSTANCES = []
 
 for k in progressbar.progressbar(range(len(NumGrafos))):
     Cont = 0
     n = lens[k]
-    p = 10/n
+    p = 20/n 
     
     while True:
+        if Cont == NumGrafos[k]:
+            break
         G = nx.erdos_renyi_graph(n, p, directed = False)
         AllConected = True if list(nx.isolates(G)) == [] else False
         
@@ -44,5 +46,6 @@ for k in progressbar.progressbar(range(len(NumGrafos))):
             Cont += 1
             print(f"\n{Cont}/{NumGrafos[k]}")
             
-        if Cont == NumGrafos[k]:
-            break
+        
+
+            
