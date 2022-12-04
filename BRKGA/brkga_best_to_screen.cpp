@@ -285,7 +285,9 @@ vector<string> graphs = {
  "ER_2000_10_0.dimacs",
  "ER_2000_10_1.dimacs",
  "ER_2000_10_2.dimacs",
+ 
  "ER_2000_10_3.dimacs",
+
  "ER_2000_15_0.dimacs",
  "ER_2000_15_1.dimacs",
  "ER_2000_15_2.dimacs",
@@ -325,7 +327,7 @@ int main( int argc, char **argv ) {
     
 
         // reading an instance
-        inputFile = "./instances/Erdos/dimacs/"+graphs[j];
+        inputFile = "./instances/Erdos/train/dimacs/"+graphs[j];
 
         cout << "loading:" << inputFile << endl;
 

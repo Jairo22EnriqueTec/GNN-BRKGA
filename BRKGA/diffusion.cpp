@@ -62,8 +62,8 @@ vector<string> graphs = {"graph_football",
     "deezer_HR",
     "musae_git"};
 
-
-vector<string> graphs_erdos = {"ER_10000_0",
+/*
+vector<string> graphs = {"ER_10000_0",
  "ER_10000_1",
  "ER_10000_2",
  "ER_10000_3",
@@ -80,6 +80,7 @@ vector<string> graphs_erdos = {"ER_10000_0",
  "ER_50000_1",
  "ER_50000_2"
 };
+*/
 
 
 // instance data
@@ -143,8 +144,8 @@ void evaluate(Individual& ind) {
     // si es MDH, entonces todos los individuos tienen la misma prob
     for (int i = 0; i < n_of_vertices; ++i) {
         options[i].node = i;
-        //options[i].value = double(degree[i])*(ind.vec)[i];
-        options[i].value = (ind.vec)[i];
+        options[i].value = double(degree[i])*(ind.vec)[i];
+        //options[i].value = (ind.vec)[i];
     }
     // se ordena la lista para recorrerse del mayor al menor
     sort(options.begin(), options.end(), option_compare);
