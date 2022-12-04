@@ -33,6 +33,8 @@ PATH_save = args.PATH_SAVE
 
 #PATH = './BRKGA/instances/Erdos/test/txt/'
 #PATH_save = './BRKGA/instances/Erdos/test/feats/'
+#python savefeats.py -p "./BRKGA/instances/Erdos/test/txt/" -ps "./BRKGA/instances/Erdos/test/feats/"
+#python savefeats.py -p "./BRKGA/instances/Erdos/test/txt/" -ps "./BRKGA/instances/Erdos/test/feats/"
 
 
 def getFeatures(G):
@@ -53,7 +55,7 @@ def getFeatures(G):
 
 def writeFeatures(PATH, ins, features, elapsed):
     subfij = '_feat'
-    file2 = open(PATH + ins.split(".")[0] + subfij + ".txt", 'w')
+    file2 = open(PATH + ins.replace(".txt","") + subfij + ".txt", 'w')
     c = 0
     
     file2.write(f"time: {elapsed}, n: {features.shape[0]}")

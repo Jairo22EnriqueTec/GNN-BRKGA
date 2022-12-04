@@ -1,98 +1,129 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[1]:
+
+
 import networkx as nx
 import numpy as np
 import torch
 from datetime import datetime
-
+import os
 import torch.nn as nn
 import torch.nn.functional as F
 from torch_geometric.nn import GCNConv
 import matplotlib.pyplot as plt
+from icecream import ic
+
+ic.configureOutput("debug | -> ")
 
 import pandas as pd
 import torch_geometric.transforms as T
 
-from create_dataset import CreateDataset
 
 from models import GNNModel
 
 import sys
 sys.path.append("../FastCover/")
 from utils import *
-import warnings
-warnings.filterwarnings('ignore')
 import argparse
-
-
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument("-s", "--Seed", help = "", type=int)
-parser.add_argument("-p", "--Prob", help = "", type=float)
-parser.add_argument("-n", "--Nodos", help = "", type=int)
-parser.add_argument("-e", "--Epochs", help = "", type=int)
-parser.add_argument("-th", "--Threshold", help = "", type=float)
-parser.add_argument("-lr", "--LearningRate", help = "", type=float)
+parser.add_argument("-p", "--PATH", help = "", type = str)
+parser.add_argument("-ps", "--PATH_SAVE", help = "", type=str)
+parser.add_argument("-MDH", "--MDH", help = "", type = bool)
+parser.add_argument("-s", "--seed", help = "", type = int)
+parser.add_argument("-e", "--epochs", help = "", type = int)
+
 args = parser.parse_args()
 
-#python TrainModels.py -th 0.1 -p 0.5 -n 10 -e 3 -lr 0.0005 -s 666
+PATH_TO_TRAIN = args.PATH
+PATH_SAVE_TRAINS = args.PATH_SAVE
+MDH = bool(args.MDH)
+epochs = args.epochs
+SEED = args.seed
 
-PATH_SAVE_TRAINS_CHECKPOINTS = 'runs/checkpoints/'
-PATH_SAVE_TRAINS = 'runs/'
+#v.g. python TrainModels.py -p "../BRKGA/instances/Erdos/train/" -ps "runs/Erdos_MDH/" -MDH 1 -s 13 -e 21
 
-num_features = 1
+#PATH_SAVE_TRAINS = 'runs/Erdos_MDH/'
+#PATH_TO_TRAIN = "../BRKGA/instances/Erdos/train/"
+
+
+Features = None
+if MDH:
+    num_features = 1
+else:
+    num_features = 5 # Change if needed
+    
 num_classes  = 2
 
-threshold = args.Threshold
+threshold = 0.5
 
-optimizer_name = 'Adam'
-lr = args.LearningRate
-epochs = args.Epochs
-
-SEED = args.Seed
-
-n = args.Nodos
-
-p = args.Prob
+optimizer_name = "Adam"
+lr = 1e-3
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 layers = ["GCN", "GAT","GraphConv", "SAGE"]
+#layers = ["SAGE"]
 
-Models = [GNNModel(c_in = 1, c_hidden = 100, c_out = 2, num_layers = 2, layer_name = layer_name, dp_rate=0.1) for 
+Models = [GNNModel(c_in = num_features, c_hidden = 100, c_out = 2, num_layers = 2, layer_name = layer_name, dp_rate=0.1) for 
          layer_name in layers]
 
-def getGraph(n, p = 0.5):
-    while True:
-        G = nx.erdos_renyi_graph(n, p, directed = False)
-        AllConected = True if len([i for i in nx.connected_components(G)]) == 1 else False
-        if AllConected:
-            break
-    return G
 
-def Convert2DataSet(Graphs):
-    g = []
-    for G in Graphs:
-        # Cambiar aquí la forma de cómo calcular dichos valores
-        OptimalSet, _ = MDH(G, threshold, print_= False)
-
-        NumNodes = G.number_of_nodes()
-        labels = np.zeros(NumNodes)
-        labels[OptimalSet] = 1
-
-        dataset = CreateDataset(G, labels)
-        data = dataset[0]
-
-        data =  data.to(device)
-        g.append(data)
-    return g
+# In[17]:
 
 
-Train = [getGraph(n+i, p) for i in range(10)]
+Instances = [graph for graph in os.listdir(PATH_TO_TRAIN + 'txt')]
 
-Graphs_Train = Convert2DataSet(Train)
+graphs = []
+for er in Instances:
+    graph = igraph.Graph.Read_Edgelist(PATH_TO_TRAIN+"txt/"+er, directed = False)
+    graphs.append(graph.to_networkx())    
+
+OptInstances = [graph for graph in os.listdir(PATH_TO_TRAIN+'optimal')]
+Solutions = []
+for er in OptInstances:
+    opt = []
+    with open(PATH_TO_TRAIN+'optimal/'+er) as f:
+        for line in f.readlines():
+            opt.append(int(line.replace("\n", "")))
+    Solutions.append(opt)
+
+
+# In[18]:
+
+
+if not MDH:
+    graphFeatures = [feat for feat in os.listdir(PATH_TO_TRAIN+'feats')]
+    Features = []
+    for er in graphFeatures:
+        temp = []
+        with open(PATH_TO_TRAIN+'feats/'+er) as f:
+            for line in f.readlines()[1:]:
+                feats = np.array(line.split(","), dtype = float)
+                temp.append(feats)
+        Features.append(np.array(temp))
+
+
+# In[19]:
+
+
+# In[20]:
+
+# Se escalan en la clase
+Graphs_Train = Convert2DataSet(graphs, Solutions, feats = Features)
+num_features = Graphs_Train[0].num_features
+num_classes = Graphs_Train[0].num_classes
+
+
+# ## Train
+
+# In[21]:
+
 
 def train(model, optimizer, data):
-        model.train()
         optimizer.zero_grad()
 
         F.nll_loss(model(data.x, data.edge_index), data.y).backward()
@@ -109,6 +140,8 @@ def test(data, model):
   return acc
 
 
+# In[22]:
+
 
 torch.manual_seed(SEED)
 for i in range(len(Models)):
@@ -116,13 +149,13 @@ for i in range(len(Models)):
     print(f" ----- Model:{layers[i]} -----")
     optimizer = getattr(torch.optim, optimizer_name)(Models[i].parameters(), lr = lr)
 
-    for epoch in range(1, epochs+1):
+    for epoch in range(1, epochs):
         
         for data in Graphs_Train:
             train(Models[i], optimizer, data)
         
         if epoch%5 == 0:
-            torch.save(Models[i].state_dict(), f=f"{PATH_SAVE_TRAINS_CHECKPOINTS}Checkpoint-model-{layers[i]}-epoch-{epoch}.pt")
+            #torch.save(Models[i].state_dict(), f=f"{PATH_SAVE_TRAINS_CHECKPOINTS}Checkpoint-model-{layers[i]}-epoch-{epoch}.pt")
             print(f"Epoch {epoch} saved for {layers[i]}.\n")
         
             Acc = []
@@ -136,3 +169,10 @@ for i in range(len(Models)):
     torch.save(Models[i].state_dict(), f=f"{PATH_SAVE_TRAINS}{layers[i]}_seed_{SEED}_thr_{int(threshold*10)}_date_{dt_string}.pt")
     
     print(f"{layers[i]} saved in {PATH_SAVE_TRAINS}\n")
+
+
+# In[ ]:
+
+
+
+

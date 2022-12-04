@@ -15,7 +15,7 @@ import warnings
 warnings.filterwarnings('ignore')
 import argparse
 
-
+##v.g. python TrainFastCover.py -s 13 -e 20 -k 50 -lr 0.005 -p "../BRKGA/instances/Erdos/train/txt/" -ps "runs/Erdos_MDH/"
 
 parser = argparse.ArgumentParser()
 
@@ -23,6 +23,10 @@ parser.add_argument("-s", "--Seed", help = "", type=int)
 parser.add_argument("-e", "--Epochs", help = "", type=int)
 parser.add_argument("-k", "--K", help = "", type=int)
 parser.add_argument("-lr", "--LearningRate", help = "", type=float)
+
+parser.add_argument("-p", "--PATH", help = "", type=str)
+parser.add_argument("-ps", "--PATH_Save", help = "", type=str)
+
 args = parser.parse_args()
 
 lr = args.LearningRate
@@ -38,16 +42,14 @@ d = 1
 HIDDEN_FEATS = [input_dim]*6
 torch.manual_seed(seed)
 
-PATH_TO_TRAIN = "data/ER_graphs/train/pkl/"
-PATH_TO_TEST = "data/ER_graphs/test/pkl/"
+PATH_TO_TRAIN = args.PATH
+PATH_SAVE_TRAINS = args.PATH_Save
+
 
 TRAIN_LIST = [graph for graph in os.listdir(PATH_TO_TRAIN)]
 
-TEST_LIST = [graph for graph in os.listdir(PATH_TO_TEST)]
-
 print(f"\nInstancias a entrenar: {TRAIN_LIST}\n")
 
-PATH_SAVE_TRAINS = "runs/"
 
 FEATURE_TYPE = "1"
 directed_train = False
@@ -488,7 +490,8 @@ dglgraphs = []
 
 for file in TRAIN_LIST:
     print(f"Cargando {PATH_TO_TRAIN+file} ...")
-    graph = igraph.Graph().Read_Pickle(PATH_TO_TRAIN+file)
+    graph = igraph.Graph.Read_Edgelist(PATH_TO_TRAIN+file, directed = False)
+    #graph = igraph.Graph().Read_Pickle(PATH_TO_TRAIN+file)
     graphs.append(graph)
     
     dglgraph = get_rev_dgl(graph, FEATURE_TYPE, input_dim, directed_train, use_cuda)
