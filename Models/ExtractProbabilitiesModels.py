@@ -16,56 +16,54 @@ from models import GNNModel
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument("-type", "--Type", help = "short, large or full", type = str)
+parser.add_argument("-pi", "--PATH", help = "Path to instances", type = str)
+parser.add_argument("-ps", "--PATH_Save", help = "Path to save results", type = str)
+parser.add_argument("-pm", "--PATH_Model", help = "Path where the models to extract probs are", type = str)
+parser.add_argument("-MDH", "--MDH", help = "", type = bool)
+
 args = parser.parse_args()
-# Example: python EvaluateFastCover.py -th 0.5 -type "short"
 
-Graphs_short = [
- 'ego-facebook.txt',
- 'gemsec_facebook_artist.txt',
- 'graph_actors_dat.txt',
- 'graph_CA-AstroPh.txt',
- 'graph_CA-CondMat.txt',
- 'graph_CA-GrQc.txt',
- 'graph_CA-HepPh.txt',
- 'graph_CA-HepTh.txt',
- 'graph_dolphins.txt',
- 'graph_Email-Enron.txt',
- 'graph_football.txt',
- 'graph_jazz.txt',
- 'graph_karate.txt',
- 'graph_ncstrlwg2.txt',
- 'soc-gplus.txt',
- 'socfb-Brandeis99.txt',
- 'socfb-Mich67.txt',
- 'socfb-nips-ego.txt']
+#v.g. python ExtractProbabilitiesModels.py -pm "runs/Erdos_I/" -pi "../BRKGA/instances/Erdos/test/txt/" -ps "./probabilidades/scalefree_MDH_Erdos/"
 
-Graphs_large = ['Amazon0302.txt',
- 'Amazon0312.txt',
- 'Amazon0505.txt',
- 'Amazon0601.txt',
- 'com-youtube.ungraph.txt',
- 'com-dblp.ungraph.txt',
- 'loc-gowalla_edges.txt',
- 'deezer_HR.txt',
- 'musae_git.txt']
+PATH_TO_TEST = args.PATH
 
-PATH_TO_TEST = "../BRKGA/instances/txt/"
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+MDH = bool(args.MDH)
 
-if args.Type == "short":
-    Graphs = Graphs_short
-elif args.Type == "large":
-    Graphs = Graphs_large
-elif args.Type == "full":
-    Graphs = [graph for graph in os.listdir(PATH_TO_TEST)]
-else:
-    raise NameError("Only: 'short', 'large' or 'full")
+PATH_SAVE_RESULTS = args.PATH_Save
 
-PATH_SAVED_TRAINS = "runs/scalefree/"
-PATH_SAVE_RESULTS = 'probabilidades/scalefree/'
+PATH_SAVED_TRAINS = args.PATH_Model
+
+
+#PATH_TO_TEST = "../BRKGA/instances/txt/"
+#PATH_SAVED_TRAINS = "runs/scalefree/"
+#PATH_SAVE_RESULTS = 'probabilidades/scalefree/'
+
+Graphs = [graph for graph in os.listdir(PATH_TO_TEST)]
 
 NAME_SAVE_RESULTS = 'Models' #Change this
+
+Features = [None]*len(Graphs)
+
+if MDH:
+    num_features = 1
+else:
+    num_features = 4 # Change if needed
+
+    graphFeatures = [feat for feat in os.listdir(PATH_TO_TEST+'feats')]
+    Features = []
+    for er in graphFeatures:
+        temp = []
+        with open(PATH_TO_TRAIN+'feats/'+er) as f:
+            for line in f.readlines()[1:]:
+                feats = np.array(line.split(","), dtype = float)
+                temp.append(feats)
+        Features.append(np.array(temp))
+
+        
+
+
+
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 use_cuda = False
 
@@ -96,19 +94,19 @@ for run_name, model, seed in zip(RUNS_LIST, MODELS, SEEDS):
     print(f"Evaluation of model: {model}, seed: {seed} in {run_name}")
     print()
     
-    net = GNNModel(c_in = 1, c_hidden = 100, c_out = 2, num_layers = 2, layer_name = model, dp_rate=0.1)
+    net = GNNModel(c_in = num_features, c_hidden = 100, c_out = 2, num_layers = 2, layer_name = model, dp_rate=0.1)
     net.load_state_dict(torch.load(PATH_SAVED_TRAINS+run_name))
     
     if use_cuda:
         net.cuda()
 
     c = 1
-    for file in Graphs:
+    for file, feat in zip(Graphs, Features):
             print(f"Loading {PATH_TO_TEST+file} ...")
             name = file.split(".")[0].replace("graph_", "")
 
             graph = igraph.Graph().Read_Edgelist(PATH_TO_TEST + file)
-            data = Convert2DataSet([graph.to_networkx()], [[]])[0]
+            data = Convert2DataSet([graph.to_networkx()], [[]], [feat])[0]
             
 
             G = graph.to_networkx().to_undirected()

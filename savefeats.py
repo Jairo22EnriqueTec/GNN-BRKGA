@@ -41,12 +41,12 @@ def getFeatures(G):
     
     BC = np.array(list(nx.betweenness_centrality(G, k = 500).values()))
     CC = np.array(list(nx.closeness_centrality(G).values()))
-    LC = np.array(list(nx.load_centrality(G).values()))
+    #LC = np.array(list(nx.load_centrality(G).values()))
     DG = np.array(list(nx.degree(G))).T[1]
     PR = np.array(list(nx.pagerank(G).values()))
 
-    features = [BC, PR, DG, CC, LC]
-    names = ["BC", "PageRank", "degree", "closeness_centrality", "LC"]
+    features = [BC, PR, DG, CC]#, LC]
+    names = ["BC", "PageRank", "degree", "closeness_centrality"]#, "LC"]
     return np.array(features).T, names
 
 

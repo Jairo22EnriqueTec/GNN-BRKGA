@@ -54,7 +54,7 @@ Features = None
 if MDH:
     num_features = 1
 else:
-    num_features = 5 # Change if needed
+    num_features = 4 # Change if needed
     
 num_classes  = 2
 
