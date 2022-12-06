@@ -22,54 +22,28 @@ import gc
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument("-type", "--Type", help = "short, large or full", type = str)
+parser.add_argument("-pi", "--PATH", help = "Path to instances", type = str)
+parser.add_argument("-ps", "--PATH_Save", help = "Path to save results", type = str)
+parser.add_argument("-pm", "--PATH_Model", help = "Path where the models to extract probs are", type = str)
+
 args = parser.parse_args()
 
-Graphs_short = [
-    'graph_football.txt',
-    'graph_jazz.txt',
-    'graph_karate.txt',
-    'graph_CA-CondMat.txt',
-    'gemsec_facebook_artist.txt',
-    'ego-facebook.txt',
+#v.g. python ExtractProbabilitiesFastCover.py -pm "./runs/scalefree/" -pi "../BRKGA/instances/Erdos/test/txt/" -ps "./probabilidades/scalefree_Erdos/"
 
- 'graph_actors_dat.txt',
- 'graph_CA-AstroPh.txt',
- 'graph_CA-CondMat.txt',
- 'graph_CA-GrQc.txt',
- 'graph_CA-HepPh.txt',
- 'graph_CA-HepTh.txt',
- 'graph_dolphins.txt',
- 'graph_Email-Enron.txt',
- 'graph_ncstrlwg2.txt',
- 'soc-gplus.txt',
- 'socfb-Brandeis99.txt',
- 'socfb-Mich67.txt',
- 'socfb-nips-ego.txt']
 
-Graphs_large = ['Amazon0302.txt',
- 'Amazon0312.txt',
- 'Amazon0505.txt',
- 'Amazon0601.txt',
- 'com-youtube.ungraph.txt',
- 'com-dblp.ungraph.txt',
- 'loc-gowalla_edges.txt',
- 'deezer_HR.txt',
- 'musae_git.txt']
+PATH_TO_TEST = args.PATH
 
-PATH_TO_TEST = "../BRKGA/instances/txt/"
+PATH_SAVE_RESULTS = args.PATH_Save
 
-if args.Type == "short":
-    Graphs = Graphs_short
-elif args.Type == "large":
-    Graphs = Graphs_large
-elif args.Type == "full":
-    Graphs = [graph for graph in os.listdir(PATH_TO_TEST)]
-else:
-    raise NameError("Only: 'short', 'large' or 'full")
+PATH_SAVED_TRAINS = args.PATH_Model
 
-PATH_SAVE_TRAINS = "runs/scalefree/"
-PATH_SAVE_RESULTS = 'probabilidades/scalefree/'
+#PATH_TO_TEST = "../BRKGA/instances/txt/"
+
+Graphs = [graph for graph in os.listdir(PATH_TO_TEST)]
+
+
+#PATH_SAVE_TRAINS = "runs/scalefree/"
+#PATH_SAVE_RESULTS = 'probabilidades/scalefree/'
 
 NAME_SAVE_RESULTS = 'FastCover' #Change this
 
@@ -81,7 +55,7 @@ directed_test = False
 
 dt_string = datetime.now().strftime("%m-%d_%H-%M")
 
-RUNS_LIST = [run for run in os.listdir(PATH_SAVE_TRAINS) if ".pt" in run]
+RUNS_LIST = [run for run in os.listdir(PATH_SAVED_TRAINS) if ".pt" in run]
 
 SEEDS = []
 MODELS = []
@@ -110,7 +84,7 @@ for run_name, model, seed in zip(RUNS_LIST, MODELS, SEEDS):
     
     if model == 'GRAT':
         net = GRAT3(*HIDDEN_FEATS)
-        net.load_state_dict(torch.load(PATH_SAVE_TRAINS+run_name))
+        net.load_state_dict(torch.load(PATH_SAVED_TRAINS+run_name))
     if use_cuda:
         net.cuda()
 

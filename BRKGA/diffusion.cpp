@@ -32,11 +32,10 @@ struct Option {
 };
 
 string inputFile;
-/*
+
 vector<string> graphs = {"graph_football",
     "graph_jazz",
     "graph_karate",
-    "graph_CA-CondMat",
     "gemsec_facebook_artist",
     "ego-facebook",
     "graph_actors_dat",
@@ -61,8 +60,8 @@ vector<string> graphs = {"graph_football",
     "loc-gowalla_edges",
     "deezer_HR",
     "musae_git"};
-*/
 
+/*
 vector<string> graphs = {
  "ER_10000_10_0",
  "ER_10000_10_1",
@@ -83,7 +82,7 @@ vector<string> graphs = {
  "ER_50000_15_0",
  "ER_50000_20_0"
  };
-
+*/
 
 
 // instance data
@@ -181,9 +180,10 @@ int main() {
 
     
     vector<string> models = {
-        "GAT", "GraphConv", "GCN", "SAGE"
+        //"GAT", "GraphConv", "GCN", "SAGE"
+        "FC"
     };
-    string directory = "Models";
+    string directory = "FastCover";
 
     string model = "";
     string PATH_TO_SAVE = "";
@@ -194,9 +194,9 @@ int main() {
         model = models[m];
 
         //string PATH_TO_SAVE = "../FastCover/results/scalefree/justprob/FastCoverResults_scalefree.txt";
-        PATH_TO_SAVE = "../Models/results/scalefree_I_Erdos/"+model+"Results_SIE.txt";
-        pathprob = "../"+directory+"/probabilidades/scalefree_I_Erdos/"+model;
-        pathinstance = "instances/Erdos/test/dimacs/";
+        PATH_TO_SAVE = "../"+directory+"/results/scalefree_I_socialnetworks/"+model+"Results_SIS.txt";
+        pathprob = "../"+directory+"/probabilidades/scalefree_socialnetworks/"+model;
+        pathinstance = "instances/socialnetworks/dimacs/";
 
         vector<int> resultados (graphs.size());
         vector<int> graphsize (graphs.size());

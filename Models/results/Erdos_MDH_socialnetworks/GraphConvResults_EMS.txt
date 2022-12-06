@@ -1,7 +1,6 @@
 graph_football,37,0.000000,115
 graph_jazz,44,0.001000,198
 graph_karate,13,0.000000,62
-graph_CA-CondMat,3441,0.693000,23133
 gemsec_facebook_artist,2444,0.484000,50515
 ego-facebook,644,0.048000,4039
 graph_actors_dat,1424,0.176000,10042
