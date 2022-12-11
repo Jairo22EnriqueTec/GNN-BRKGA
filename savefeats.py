@@ -62,7 +62,7 @@ def writeFeatures(PATH, ins, features, elapsed):
     file2.write('\n')
     
     for f in features:
-        st = str(f).replace("\n", "").replace("[", "").replace("]", "").replace(" ", ",")
+        st = ",".join(str(x) for x in f)
         file2.write(st)
         file2.write('\n')
         c += 1

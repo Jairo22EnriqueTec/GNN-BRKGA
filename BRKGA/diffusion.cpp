@@ -32,7 +32,7 @@ struct Option {
 };
 
 string inputFile;
-
+/*
 vector<string> graphs = {"graph_football",
     "graph_jazz",
     "graph_karate",
@@ -60,8 +60,8 @@ vector<string> graphs = {"graph_football",
     "loc-gowalla_edges",
     "deezer_HR",
     "musae_git"};
+*/
 
-/*
 vector<string> graphs = {
  "ER_10000_10_0",
  "ER_10000_10_1",
@@ -82,7 +82,7 @@ vector<string> graphs = {
  "ER_50000_15_0",
  "ER_50000_20_0"
  };
-*/
+
 
 
 // instance data
@@ -146,8 +146,8 @@ void evaluate(Individual& ind) {
     // si es MDH, entonces todos los individuos tienen la misma prob
     for (int i = 0; i < n_of_vertices; ++i) {
         options[i].node = i;
-        //options[i].value = double(degree[i])*(ind.vec)[i];
-        options[i].value = (ind.vec)[i];
+        options[i].value = double(degree[i])*(ind.vec)[i];
+        //options[i].value = (ind.vec)[i];
     }
     // se ordena la lista para recorrerse del mayor al menor
     sort(options.begin(), options.end(), option_compare);
@@ -180,10 +180,10 @@ int main() {
 
     
     vector<string> models = {
-        //"GAT", "GraphConv", "GCN", "SAGE"
-        "FC"
+        "GAT", "GraphConv", "GCN", "SAGE"
+        //"FC"
     };
-    string directory = "FastCover";
+    string directory = "Models";
 
     string model = "";
     string PATH_TO_SAVE = "";
@@ -194,9 +194,10 @@ int main() {
         model = models[m];
 
         //string PATH_TO_SAVE = "../FastCover/results/scalefree/justprob/FastCoverResults_scalefree.txt";
-        PATH_TO_SAVE = "../"+directory+"/results/scalefree_I_socialnetworks/"+model+"Results_SIS.txt";
-        pathprob = "../"+directory+"/probabilidades/scalefree_socialnetworks/"+model;
-        pathinstance = "instances/socialnetworks/dimacs/";
+        PATH_TO_SAVE = "../"+directory+"/results/Erdos_MDH_Erdos/"+model+"Results_EME.txt";
+        pathprob = "../"+directory+"/probabilidades/Erdos_Erdos/"+model;
+        //pathinstance = "instances/socialnetworks/dimacs/";
+        pathinstance = "instances/Erdos/test/dimacs/";
 
         vector<int> resultados (graphs.size());
         vector<int> graphsize (graphs.size());

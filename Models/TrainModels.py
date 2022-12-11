@@ -30,15 +30,17 @@ import argparse
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument("-p", "--PATH", help = "", type = str)
+parser.add_argument("-pi", "--PATH", help = "", type = str)
+parser.add_argument("-pv", "--PATH_VAL", help = "", type = str)
 parser.add_argument("-ps", "--PATH_SAVE", help = "", type=str)
-parser.add_argument("-MDH", "--MDH", help = "", type = bool)
+parser.add_argument("-MDH", "--MDH", help = "", type = int)
 parser.add_argument("-s", "--seed", help = "", type = int)
 parser.add_argument("-e", "--epochs", help = "", type = int)
 
 args = parser.parse_args()
 
 PATH_TO_TRAIN = args.PATH
+PATH_TO_VALIDATION = args.PATH_VAL
 PATH_SAVE_TRAINS = args.PATH_SAVE
 MDH = bool(args.MDH)
 epochs = args.epochs
@@ -56,25 +58,25 @@ if MDH:
 else:
     num_features = 4 # Change if needed
     
-num_classes  = 2
+num_classes = 2
 
 threshold = 0.5
 
 optimizer_name = "Adam"
-lr = 1e-3
+lr = 5e-4
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 layers = ["GCN", "GAT","GraphConv", "SAGE"]
 #layers = ["SAGE"]
 
-Models = [GNNModel(c_in = num_features, c_hidden = 100, c_out = 2, num_layers = 2, layer_name = layer_name, dp_rate=0.1) for 
+Models = [GNNModel(c_in = num_features, c_hidden = 100, c_out = num_classes, num_layers = 2, layer_name = layer_name, dp_rate=0.1) for 
          layer_name in layers]
 
 
 # In[17]:
 
-
+# Training instances
 Instances = [graph for graph in os.listdir(PATH_TO_TRAIN + 'txt')]
 
 graphs = []
@@ -91,29 +93,71 @@ for er in OptInstances:
             opt.append(int(line.replace("\n", "")))
     Solutions.append(opt)
 
+# validation instances
+if PATH_TO_VALIDATION != "":
+    Instances = [graph for graph in os.listdir(PATH_TO_VALIDATION + 'txt')]
 
-# In[18]:
+    graphs_val = []
+    for er in Instances:
+        graph = igraph.Graph.Read_Edgelist(PATH_TO_VALIDATION+"txt/"+er, directed = False)
+        graphs_val.append(graph.to_networkx())    
 
+
+    OptInstances = [graph for graph in os.listdir(PATH_TO_VALIDATION+'optimal')]
+    Solutions_val = []
+    for er in OptInstances:
+        opt = []
+        with open(PATH_TO_VALIDATION+'optimal/'+er) as f:
+            for line in f.readlines():
+                opt.append(int(line.replace("\n", "")))
+        Solutions_val.append(opt)
+    
+   
 
 if not MDH:
+    print("\nCargando Features...\n")
     graphFeatures = [feat for feat in os.listdir(PATH_TO_TRAIN+'feats')]
     Features = []
     for er in graphFeatures:
         temp = []
-        with open(PATH_TO_TRAIN+'feats/'+er) as f:
-            for line in f.readlines()[1:]:
-                feats = np.array(line.split(","), dtype = float)
-                temp.append(feats)
-        Features.append(np.array(temp))
+        try:
+            with open(PATH_TO_TRAIN+'feats/'+er) as f:
+                c = 0
 
+                for line in f.readlines()[1:]:
+                    c+=1
+                    feats = np.array(line.split(","), dtype = float)
+                    temp.append(feats)
+            Features.append(np.array(temp))
+        except:
+            print(er)
+            print(line)
+            print(c)
+        
+    if PATH_TO_VALIDATION != "":
+        graphFeatures_val = [feat for feat in os.listdir(PATH_TO_VALIDATION+'feats')]
+        Features_val = []
+        for er in graphFeatures_val:
+            temp = []
+            with open(PATH_TO_VALIDATION+'feats/'+er) as f:
 
+                for line in f.readlines()[1:]:
+                    feats = np.array(line.split(","), dtype = float)
+                    temp.append(feats)
+            Features_val.append(np.array(temp))
 # In[19]:
 
 
 # In[20]:
 
 # Se escalan en la clase
+if PATH_TO_VALIDATION != "":
+    Graphs_Val = Convert2DataSet(graphs_val, Solutions_val, feats = Features_val)
+else:
+    Graphs_Val = ""
+    
 Graphs_Train = Convert2DataSet(graphs, Solutions, feats = Features)
+
 num_features = Graphs_Train[0].num_features
 num_classes = Graphs_Train[0].num_classes
 
@@ -144,17 +188,20 @@ def test(data, model):
 
 
 torch.manual_seed(SEED)
+
 for i in range(len(Models)):
     print()
     print(f" ----- Model:{layers[i]} -----")
     optimizer = getattr(torch.optim, optimizer_name)(Models[i].parameters(), lr = lr)
-
+    
+    ES = EarlyStopping(12, PATH_SAVE_TRAINS, layers[i], SEED, threshold, epochs)
+    
     for epoch in range(1, epochs):
         
         for data in Graphs_Train:
             train(Models[i], optimizer, data)
         
-        if epoch%5 == 0:
+        if epoch%10 == 0:
             #torch.save(Models[i].state_dict(), f=f"{PATH_SAVE_TRAINS_CHECKPOINTS}Checkpoint-model-{layers[i]}-epoch-{epoch}.pt")
             print(f"Epoch {epoch} saved for {layers[i]}.\n")
         
@@ -165,10 +212,12 @@ for i in range(len(Models)):
             print(f"Mean Acc: {np.mean(Acc)}")
             print()
         
-    dt_string = datetime.now().strftime("%m-%d_%H-%M")
-    torch.save(Models[i].state_dict(), f=f"{PATH_SAVE_TRAINS}{layers[i]}_seed_{SEED}_thr_{int(threshold*10)}_date_{dt_string}.pt")
+        
+        if ES.check(Models[i], Graphs_Val, Graphs_Train):
+            break
     
     print(f"{layers[i]} saved in {PATH_SAVE_TRAINS}\n")
+    #ES.plot_history(layers[i])
 
 
 # In[ ]:

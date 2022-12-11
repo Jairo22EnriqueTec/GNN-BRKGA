@@ -23,7 +23,7 @@ parser.add_argument("-MDH", "--MDH", help = "", type = bool)
 
 args = parser.parse_args()
 
-#v.g. python ExtractProbabilitiesModels.py -pm "runs/Erdos_I/" -pi "../BRKGA/instances/Erdos/test/txt/" -ps "./probabilidades/scalefree_MDH_Erdos/"
+#v.g. python ExtractProbabilitiesModels.py -pm "runs/Erdos/" -pi "../BRKGA/instances/Erdos/test/" -ps "./probabilidades/Erdos_Erdos/"
 
 PATH_TO_TEST = args.PATH
 
@@ -38,7 +38,7 @@ PATH_SAVED_TRAINS = args.PATH_Model
 #PATH_SAVED_TRAINS = "runs/scalefree/"
 #PATH_SAVE_RESULTS = 'probabilidades/scalefree/'
 
-Graphs = [graph for graph in os.listdir(PATH_TO_TEST)]
+Graphs = [graph for graph in os.listdir(PATH_TO_TEST + "txt")]
 
 NAME_SAVE_RESULTS = 'Models' #Change this
 
@@ -53,7 +53,7 @@ else:
     Features = []
     for er in graphFeatures:
         temp = []
-        with open(PATH_TO_TRAIN+'feats/'+er) as f:
+        with open(PATH_TO_TEST+'feats/'+er) as f:
             for line in f.readlines()[1:]:
                 feats = np.array(line.split(","), dtype = float)
                 temp.append(feats)
@@ -73,15 +73,17 @@ RUNS_LIST = [run for run in os.listdir(PATH_SAVED_TRAINS) if ".pt" in run]
 
 SEEDS = []
 MODELS = []
+EPOCHS = []
 for run_name in RUNS_LIST:
-    SEEDS.append(run_name.split("_")[2])
+    SEEDS.append(run_name.split("_")[4])
     MODELS.append(run_name.split("_")[0])
+    EPOCHS.append(run_name.split("_")[2])
     
 records = []
 Total = len(Graphs)
 
-def save(name, model, out):
-    with open(f'{PATH_SAVE_RESULTS}{model}_{name}', 'w') as f:
+def save(name, model, out, epoch):
+    with open(f'{PATH_SAVE_RESULTS}{model}_e{epoch}_{name}', 'w') as f:
         out = out.detach().numpy()
         e = 0.0001
         for o in out:
@@ -89,9 +91,9 @@ def save(name, model, out):
             f.write("\n")
 
     
-for run_name, model, seed in zip(RUNS_LIST, MODELS, SEEDS):
+for run_name, model, seed, epoch in zip(RUNS_LIST, MODELS, SEEDS, EPOCHS):
     print()
-    print(f"Evaluation of model: {model}, seed: {seed} in {run_name}")
+    print(f"Evaluation of model: {model}, seed: {seed}, epochs: {epoch} in {run_name}")
     print()
     
     net = GNNModel(c_in = num_features, c_hidden = 100, c_out = 2, num_layers = 2, layer_name = model, dp_rate=0.1)
@@ -102,10 +104,10 @@ for run_name, model, seed in zip(RUNS_LIST, MODELS, SEEDS):
 
     c = 1
     for file, feat in zip(Graphs, Features):
-            print(f"Loading {PATH_TO_TEST+file} ...")
+            print(f"Loading {PATH_TO_TEST}txt/{file} ...")
             name = file.split(".")[0].replace("graph_", "")
 
-            graph = igraph.Graph().Read_Edgelist(PATH_TO_TEST + file)
+            graph = igraph.Graph().Read_Edgelist(PATH_TO_TEST +"txt/"+ file)
             data = Convert2DataSet([graph.to_networkx()], [[]], [feat])[0]
             
 
@@ -119,7 +121,7 @@ for run_name, model, seed in zip(RUNS_LIST, MODELS, SEEDS):
             # a la solución, lo cual está en la columna 1
             out = torch.exp(net(data.x, data.edge_index).T[1])
             
-            save(file, model, out)
+            save(file, model, out, epoch)
          
            
             c+=1
