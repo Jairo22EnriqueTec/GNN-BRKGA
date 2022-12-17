@@ -46,7 +46,7 @@ MDH = bool(args.MDH)
 epochs = args.epochs
 SEED = args.seed
 
-#v.g. python TrainModels.py -p "../BRKGA/instances/Erdos/train/" -ps "runs/Erdos_MDH/" -MDH 1 -s 13 -e 21
+#v.g. python TrainModels.py -pi "../BRKGA/instances/Erdos/train/" -ps "runs/Erdos/" -MDH 0 -s 13 -e 31 -pv ""
 
 #PATH_SAVE_TRAINS = 'runs/Erdos_MDH/'
 #PATH_TO_TRAIN = "../BRKGA/instances/Erdos/train/"

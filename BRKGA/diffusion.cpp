@@ -183,6 +183,8 @@ int main() {
         "GAT", "GraphConv", "GCN", "SAGE"
         //"FC"
     };
+    vector<string> epochs = {"e11", "e21", "e31"};
+
     string directory = "Models";
 
     string model = "";
@@ -192,94 +194,97 @@ int main() {
 
     for (int m = 0; m < models.size(); ++m) {
         model = models[m];
+        for (int e = 0; e < epochs.size(); ++e) {
 
-        //string PATH_TO_SAVE = "../FastCover/results/scalefree/justprob/FastCoverResults_scalefree.txt";
-        PATH_TO_SAVE = "../"+directory+"/results/Erdos_MDH_Erdos/"+model+"Results_EME.txt";
-        pathprob = "../"+directory+"/probabilidades/Erdos_Erdos/"+model;
-        //pathinstance = "instances/socialnetworks/dimacs/";
-        pathinstance = "instances/Erdos/test/dimacs/";
 
-        vector<int> resultados (graphs.size());
-        vector<int> graphsize (graphs.size());
-        vector<double> ElapsedTime (graphs.size());
+            //string PATH_TO_SAVE = "../FastCover/results/scalefree/justprob/FastCoverResults_scalefree.txt";
+            PATH_TO_SAVE = "../"+directory+"/results/scalefree_MDH_Erdos/"+model+"Results_SME_"+epochs[e]+".txt";
+            pathprob = "../"+directory+"/probabilidades/scalefree_Erdos/"+model;
+            //pathinstance = "instances/socialnetworks/dimacs/";
+            pathinstance = "instances/Erdos/test/dimacs/";
 
-        for (int j = 0; j < graphs.size(); ++j) {
+            vector<int> resultados (graphs.size());
+            vector<int> graphsize (graphs.size());
+            vector<double> ElapsedTime (graphs.size());
 
-            //string inputFile = "instances/dimacs/"+graphs[j]+".dimacs";
-            string inputFile = pathinstance + graphs[j]+".dimacs";
+            for (int j = 0; j < graphs.size(); ++j) {
 
-            // reading an instance
-            cout << "\nCargando "+inputFile+" ..." << endl;
+                //string inputFile = "instances/dimacs/"+graphs[j]+".dimacs";
+                string inputFile = pathinstance + graphs[j]+".dimacs";
 
-            ifstream indata;
-            indata.open(inputFile.c_str());
-            if(!indata) { // file couldn't be opened
-                cout << "Error: file could not be opened" << endl;
-                exit(1);
+                // reading an instance
+                cout << "\nCargando "+inputFile+" ..." << endl;
+
+                ifstream indata;
+                indata.open(inputFile.c_str());
+                if(!indata) { // file couldn't be opened
+                    cout << "Error: file could not be opened" << endl;
+                    exit(1);
+                }
+
+                string s1, s2;
+                indata >> s1 >> s2;
+                indata >> n_of_vertices;
+                indata >> n_of_arcs;
+                neigh = vector< set<int> >(n_of_vertices);
+                int u, v;
+                while(indata >> s1 >> u >> v) {
+                    neigh[u - 1].insert(v - 1);
+                    neigh[v - 1].insert(u - 1);
+                }
+
+                indata.close();
+                
+                degree = vector<int>(n_of_vertices);
+                required = vector<int>(n_of_vertices);
+                for (int i = 0; i < n_of_vertices; i++) {
+                    degree[i] = int(neigh[i].size());
+                    required[i] = ceil((double)degree[i] / 2);
+                }
+
+
+                string vecfile = pathprob+"_"+ epochs[e] +"_"+graphs[j]+".txt";
+                cout << "\nCargando vector de probabilidades "+vecfile+" ..." << endl;
+                indata.open(vecfile.c_str());
+                if(!indata) { // file couldn't be opened
+                    cout << "Error: file could not be opened 2" << endl;
+                    exit(1);
+                }
+                vector<double> vec = vector<double>(n_of_vertices, 0);
+                float i;
+                int counter = 0;
+                while(indata >> i) {
+                    vec[counter] = i;
+                    ++counter;
+                }
+
+                Individual Prueba;
+                Prueba.vec = vec;
+                cout << "\nIniciando infección...\n" << endl;
+                clock_t start = clock();
+                evaluate(Prueba);
+                clock_t end = clock();
+                double elapsed = double(end - start)/CLOCKS_PER_SEC;
+
+                std::cout << Prueba.target_set_size << endl;
+
+                resultados[j] = Prueba.target_set_size;
+                ElapsedTime[j] = elapsed;
+                graphsize[j] = n_of_vertices;
             }
 
-            string s1, s2;
-            indata >> s1 >> s2;
-            indata >> n_of_vertices;
-            indata >> n_of_arcs;
-            neigh = vector< set<int> >(n_of_vertices);
-            int u, v;
-            while(indata >> s1 >> u >> v) {
-                neigh[u - 1].insert(v - 1);
-                neigh[v - 1].insert(u - 1);
+            ofstream myfile;
+            myfile.open (PATH_TO_SAVE);
+            for (int j = 0; j < graphs.size(); ++j) {
+                myfile << graphs[j]+","+std::to_string(resultados[j])+
+                ","+std::to_string(ElapsedTime[j])+","+std::to_string(graphsize[j])+"\n";
             }
-
-            indata.close();
             
-            degree = vector<int>(n_of_vertices);
-            required = vector<int>(n_of_vertices);
-            for (int i = 0; i < n_of_vertices; i++) {
-                degree[i] = int(neigh[i].size());
-                required[i] = ceil((double)degree[i] / 2);
-            }
+            myfile.close();
 
-
-            string vecfile = pathprob+"_"+graphs[j]+".txt";
-            cout << "\nCargando vector de probabilidades "+vecfile+" ..." << endl;
-            indata.open(vecfile.c_str());
-            if(!indata) { // file couldn't be opened
-                cout << "Error: file could not be opened 2" << endl;
-                exit(1);
-            }
-            vector<double> vec = vector<double>(n_of_vertices, 0);
-            float i;
-            int counter = 0;
-            while(indata >> i) {
-                vec[counter] = i;
-                ++counter;
-            }
-
-            Individual Prueba;
-            Prueba.vec = vec;
-            cout << "\nIniciando infección...\n" << endl;
-            clock_t start = clock();
-            evaluate(Prueba);
-            clock_t end = clock();
-            double elapsed = double(end - start)/CLOCKS_PER_SEC;
-
-            std::cout << Prueba.target_set_size << endl;
-
-            resultados[j] = Prueba.target_set_size;
-            ElapsedTime[j] = elapsed;
-            graphsize[j] = n_of_vertices;
         }
-
-        ofstream myfile;
-        myfile.open (PATH_TO_SAVE);
-        for (int j = 0; j < graphs.size(); ++j) {
-            myfile << graphs[j]+","+std::to_string(resultados[j])+
-            ","+std::to_string(ElapsedTime[j])+","+std::to_string(graphsize[j])+"\n";
-        }
-        
-        myfile.close();
-
     }
     return 0;
 
-}
+    }
 

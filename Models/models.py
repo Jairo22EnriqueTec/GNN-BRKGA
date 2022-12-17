@@ -1,59 +1,63 @@
 import torch.nn as nn
 import torch_geometric.nn as geom_nn
 import torch.nn.functional as F
+import torch
+from torch_geometric.nn import Linear
 
-gnn_layer_by_name = {
-    "GCN": geom_nn.GCNConv,
-    "GAT": geom_nn.GATConv,
-    "GraphConv": geom_nn.GraphConv,
-    "SAGE": geom_nn.SAGEConv,
-    "GIN": geom_nn.GINConv
-}
-
-class GNNModel(nn.Module):
-
-    def __init__(self, c_in, c_hidden, c_out, num_layers=2, layer_name="GCN", dp_rate=0.1, **kwargs):
-        """
-        Inputs:
-            c_in - Dimension of input features
-            c_hidden - Dimension of hidden features
-            c_out - Dimension of the output features. Usually number of classes in classification
-            num_layers - Number of "hidden" graph layers
-            layer_name - String of the graph layer to use
-            dp_rate - Dropout rate to apply throughout the network
-            kwargs - Additional arguments for the graph layer (e.g. number of heads for GAT)
-        """
+class GNN(torch.nn.Module):
+    def __init__(self, num_node_features, num_classes, name_layer = "SAGE"):
         super().__init__()
-        gnn_layer = gnn_layer_by_name[layer_name]
+        self.name = name_layer
+        layer = None
+        if name_layer == "SAGE":
+            layer = geom_nn.SAGEConv
+            hidden_feats = 16
+            self.conv1 = layer(num_node_features, hidden_feats)
+            self.conv3 = Linear(hidden_feats, num_classes)
+            
+        elif name_layer == "GAT":
+            layer = geom_nn.GATConv
+            hidden_feats = 16
+            self.conv1 = layer(num_node_features, hidden_feats)
+            self.conv3 = Linear(hidden_feats, num_classes)
+            
+        elif name_layer == "GCN":
+            layer = geom_nn.GCNConv
+            hidden_feats = 16
+            self.conv1 = layer(num_node_features, num_classes)
+            #self.conv1 = layer(num_node_features, hidden_feats)
+            #self.conv3 = Linear(hidden_feats, num_classes)
+            
+        elif name_layer == "GraphConv":
+            layer = geom_nn.GraphConv
+            hidden_feats = 16
+            self.conv1 = layer(num_node_features, num_classes)
+            
+        elif name_layer == "SGConv":
+            layer = geom_nn.SGConv
+            hidden_feats = 16
+            self.conv1 = layer(num_node_features, hidden_feats)
+            self.conv3 = Linear(hidden_feats, num_classes)
+        
+        
+        else:
+            print("Nanais")
+    
+        
+        #self.conv2 = layer(hidden_feats, hidden_feats)
+        #self.conv3 = Linear(hidden_feats, num_classes)
 
-        layers = []
-        in_channels, out_channels = c_in, c_hidden
-        for l_idx in range(num_layers-1):
-            layers += [
-                gnn_layer(in_channels=in_channels,
-                          out_channels=out_channels,
-                          **kwargs),
-                nn.ReLU(inplace=True),
-                nn.Dropout(dp_rate)
-            ]
-            in_channels = c_hidden
-        layers += [gnn_layer(in_channels=in_channels,
-                             out_channels=c_out,
-                             **kwargs)]
-        self.layers = nn.ModuleList(layers)
+    def forward(self, data):
+        x, edge_index = data.x, data.edge_index
 
-    def forward(self, x, edge_index):
-        """
-        Inputs:
-            x - Input features per node
-            edge_index - List of vertex index pairs representing the edges in the graph (PyTorch geometric notation)
-        """
-        for l in self.layers:
-            # For graph layers, we need to add the "edge_index" tensor as additional input
-            # All PyTorch Geometric graph layer inherit the class "MessagePassing", hence
-            # we can simply check the class type.
-            if isinstance(l, geom_nn.MessagePassing):
-                x = l(x, edge_index)
-            else:
-                x = l(x)
-        return F.log_softmax(x, dim=1)
+        x = self.conv1(x, edge_index)
+        x = F.relu(x)
+        #x = F.dropout(x, training=self.training)
+        #x = self.conv2(x, edge_index)
+
+        #return F.log_softmax(self.conv3(x), dim=1)
+        if self.name in ['GraphConv', 'GCN']:
+            return F.log_softmax(x, dim=1)
+        else:
+            return F.log_softmax(self.conv3(x), dim=1)
+        

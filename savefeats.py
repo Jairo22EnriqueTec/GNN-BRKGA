@@ -6,17 +6,10 @@
 
 import numpy as np
 import networkx as nx
-import igraph
-import progressbar
-from icecream import ic
 import os
 import time
-import matplotlib.pyplot as plt
-ic.configureOutput(prefix = 'debug | -> ')
-ic.disable()
-ic.enable()
-
 import argparse
+import igraph
 
 
 
@@ -44,9 +37,11 @@ def getFeatures(G):
     #LC = np.array(list(nx.load_centrality(G).values()))
     DG = np.array(list(nx.degree(G))).T[1]
     PR = np.array(list(nx.pagerank(G).values()))
+    
+    EC = np.array(list(nx.eigenvector_centrality(G).values()))
 
-    features = [BC, PR, DG, CC]#, LC]
-    names = ["BC", "PageRank", "degree", "closeness_centrality"]#, "LC"]
+    features = [BC, PR, DG, CC, EC]
+    names = ["BC", "PageRank", "degree", "closeness_centrality", "E"]#, "LC"]
     return np.array(features).T, names
 
 
@@ -55,6 +50,10 @@ def getFeatures(G):
 
 def writeFeatures(PATH, ins, features, elapsed):
     subfij = '_feat'
+    #with open(PATH + ins.replace(".txt","") + subfij + ".npy", "wb") as f:
+    #    np.save(f, features, allow_pickle=True)
+    #"""
+    
     file2 = open(PATH + ins.replace(".txt","") + subfij + ".txt", 'w')
     c = 0
     
@@ -68,18 +67,35 @@ def writeFeatures(PATH, ins, features, elapsed):
         c += 1
     file2.close()
     print(f"para {ins} se escribieron {c} lines")
+    #"""
 
 
 # In[231]:
 
 graphs = [graph for graph in os.listdir(PATH)]
-
+graphs.sort(reverse = True)
 Graphs = []
+
 for ins in graphs:
+    """
+    file1 = open(PATH+ins, 'r')
+    
+    Lines = file1.readlines()
+    VectorList = []
+    for line in Lines:
+        VectorList.append(line.replace("\n",""))
+
+    file1.close()
+    G2 = nx.parse_edgelist(VectorList, nodetype=int)
+
+    H = nx.Graph()
+    H.add_nodes_from(sorted(G2.nodes(data=True)))
+    H.add_edges_from(G2.edges(data=True))
+    """
     G = igraph.Graph.Read_Edgelist(PATH+ins, directed = False)
     G = G.to_networkx()
+    
     Graphs.append(G)
-
 
 # In[229]:
 
