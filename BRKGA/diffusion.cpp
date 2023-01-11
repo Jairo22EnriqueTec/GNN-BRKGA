@@ -34,6 +34,26 @@ struct Option {
 string inputFile;
 /*
 vector<string> graphs = {"graph_football",
+    "Amazon0302",
+    "graph_jazz",
+    "graph_karate",
+    "gemsec_facebook_artist",
+    "ego-facebook",
+    "graph_actors_dat",
+    "graph_dolphins",
+    "graph_Email-Enron",
+    "graph_ncstrlwg2",
+    "soc-gplus",
+    "socfb-Brandeis99",
+    "socfb-Mich67",
+    "socfb-nips-ego",
+    "loc-gowalla_edges",
+    "deezer_HR",
+    "musae_git"};
+    */
+
+
+vector<string> graphs = {"graph_football",
     "graph_jazz",
     "graph_karate",
     "gemsec_facebook_artist",
@@ -55,13 +75,12 @@ vector<string> graphs = {"graph_football",
     "Amazon0312",
     "Amazon0505",
     "Amazon0601",
-    "com-youtube.ungraph",
     "com-dblp.ungraph",
     "loc-gowalla_edges",
     "deezer_HR",
     "musae_git"};
-*/
 
+/*
 vector<string> graphs = {
  "ER_10000_10_0",
  "ER_10000_10_1",
@@ -82,7 +101,7 @@ vector<string> graphs = {
  "ER_50000_15_0",
  "ER_50000_20_0"
  };
-
+*/
 
 
 // instance data
@@ -146,8 +165,8 @@ void evaluate(Individual& ind) {
     // si es MDH, entonces todos los individuos tienen la misma prob
     for (int i = 0; i < n_of_vertices; ++i) {
         options[i].node = i;
-        options[i].value = double(degree[i])*(ind.vec)[i];
-        //options[i].value = (ind.vec)[i];
+        //options[i].value = double(degree[i])*(ind.vec)[i];
+        options[i].value = (ind.vec)[i];
     }
     // se ordena la lista para recorrerse del mayor al menor
     sort(options.begin(), options.end(), option_compare);
@@ -178,12 +197,10 @@ void evaluate(Individual& ind) {
 
 int main() {
 
-    
     vector<string> models = {
-        "GAT", "GraphConv", "GCN", "SAGE"
+        "GAT", "GraphConv", "GCN", "SAGE", "SGConv"
         //"FC"
     };
-    vector<string> epochs = {"e11", "e21", "e31"};
 
     string directory = "Models";
 
@@ -194,14 +211,11 @@ int main() {
 
     for (int m = 0; m < models.size(); ++m) {
         model = models[m];
-        for (int e = 0; e < epochs.size(); ++e) {
-
-
             //string PATH_TO_SAVE = "../FastCover/results/scalefree/justprob/FastCoverResults_scalefree.txt";
-            PATH_TO_SAVE = "../"+directory+"/results/scalefree_MDH_Erdos/"+model+"Results_SME_"+epochs[e]+".txt";
-            pathprob = "../"+directory+"/probabilidades/scalefree_Erdos/"+model;
-            //pathinstance = "instances/socialnetworks/dimacs/";
-            pathinstance = "instances/Erdos/test/dimacs/";
+            PATH_TO_SAVE = "../"+directory+"/results/scalefree_I_socialnetworks/"+model+"Results_SIS.txt";
+            pathprob = "../"+directory+"/probabilidades/scalefree_socialnetworks/"+model;
+            pathinstance = "instances/socialnetworks/dimacs/";
+            //pathinstance = "instances/Erdos/test/dimacs/";
 
             vector<int> resultados (graphs.size());
             vector<int> graphsize (graphs.size());
@@ -243,7 +257,7 @@ int main() {
                 }
 
 
-                string vecfile = pathprob+"_"+ epochs[e] +"_"+graphs[j]+".txt";
+                string vecfile = pathprob+"_"+graphs[j]+".txt";
                 cout << "\nCargando vector de probabilidades "+vecfile+" ..." << endl;
                 indata.open(vecfile.c_str());
                 if(!indata) { // file couldn't be opened
@@ -282,7 +296,7 @@ int main() {
             
             myfile.close();
 
-        }
+        
     }
     return 0;
 
