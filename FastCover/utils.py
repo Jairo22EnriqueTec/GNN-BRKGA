@@ -114,7 +114,7 @@ def CheckInfect(G, Infected, Num_Neighs, Num_Neighs_Infected, Can_Sum, n, thresh
     return size(Infected) == n, size(Infected)/n#, Infected, Can_Sum
 
 
-def FindMinimumTarget(G, out = None, threshold = 0.5):
+def FindMinimumTarget(G, out = None, threshold = 0.5, print_ = False):
     """
     in:
     G - networkx
@@ -157,10 +157,11 @@ def FindMinimumTarget(G, out = None, threshold = 0.5):
         
         if Sol:
             break
-        if i % (n//20) == 0:
+        if i % (n//20) == 0 and print_:
             print(f"{P:.2f} Infected")
-    print(f"1.00 Infected")
-    print()
+    if print_:
+        print(f"1.00 Infected")
+        print()
     return Solution, len(Solution)
 
 def get_rev_dgl(graph, feature_type='0', feature_dim=None, is_directed=False, use_cuda=False):
