@@ -12,7 +12,7 @@ from utils import *
 import warnings
 warnings.filterwarnings('ignore')
 import argparse
-from models import GNNModel
+from models import GNN
 
 parser = argparse.ArgumentParser()
 
@@ -38,7 +38,7 @@ PATH_SAVED_TRAINS = args.PATH_Model
 #PATH_SAVED_TRAINS = "runs/scalefree/"
 #PATH_SAVE_RESULTS = 'probabilidades/scalefree/'
 
-Graphs = [graph for graph in os.listdir(PATH_TO_TEST + "txt")]
+Graphs = [graph for graph in os.listdir(PATH_TO_TEST + "txt") if ".txt" in graph]
 
 NAME_SAVE_RESULTS = 'Models' #Change this
 
@@ -47,13 +47,14 @@ Features = [None]*len(Graphs)
 if MDH:
     num_features = 1
 else:
-    num_features = 4 # Change if needed
+    num_features = 5 # Change if needed
 
-    graphFeatures = [feat for feat in os.listdir(PATH_TO_TEST+'feats')]
+    #graphFeatures = [feat for feat in os.listdir(PATH_TO_TEST+'feats') if ".txt" in feat]
     Features = []
-    for er in graphFeatures:
+    for er in Graphs:
         temp = []
-        with open(PATH_TO_TEST+'feats/'+er) as f:
+        #with open(PATH_TO_TEST+'feats/'+er) as f:
+        with open(PATH_TO_TEST+'feats/'+er.replace(".txt", "_feat.txt")) as f:
             for line in f.readlines()[1:]:
                 feats = np.array(line.split(","), dtype = float)
                 temp.append(feats)
@@ -73,17 +74,16 @@ RUNS_LIST = [run for run in os.listdir(PATH_SAVED_TRAINS) if ".pt" in run]
 
 SEEDS = []
 MODELS = []
-EPOCHS = []
 for run_name in RUNS_LIST:
-    SEEDS.append(run_name.split("_")[4])
+    SEEDS.append(run_name.split("_")[3])
     MODELS.append(run_name.split("_")[0])
-    EPOCHS.append(run_name.split("_")[2])
+    #EPOCHS.append(run_name.split("_")[2])
     
 records = []
 Total = len(Graphs)
 
-def save(name, model, out, epoch):
-    with open(f'{PATH_SAVE_RESULTS}{model}_e{epoch}_{name}', 'w') as f:
+def save(name, model, out):
+    with open(f'{PATH_SAVE_RESULTS}{model}_{name}', 'w') as f:
         out = out.detach().numpy()
         e = 0.0001
         for o in out:
@@ -91,12 +91,14 @@ def save(name, model, out, epoch):
             f.write("\n")
 
     
-for run_name, model, seed, epoch in zip(RUNS_LIST, MODELS, SEEDS, EPOCHS):
+for run_name, model, seed in zip(RUNS_LIST, MODELS, SEEDS):
     print()
-    print(f"Evaluation of model: {model}, seed: {seed}, epochs: {epoch} in {run_name}")
+    print(f"Evaluation of model: {model}, seed: {seed} in {run_name}")
     print()
     
-    net = GNNModel(c_in = num_features, c_hidden = 100, c_out = 2, num_layers = 2, layer_name = model, dp_rate=0.1)
+    #net = GNN(c_in = num_features, c_hidden = 100, c_out = 2, num_layers = 2, layer_name = model, dp_rate=0.1)
+    net = GNN(num_node_features = 5, num_classes = 2, name_layer = model)
+    
     net.load_state_dict(torch.load(PATH_SAVED_TRAINS+run_name))
     
     if use_cuda:
@@ -119,9 +121,9 @@ for run_name, model, seed, epoch in zip(RUNS_LIST, MODELS, SEEDS, EPOCHS):
 
             # Puesto viene de un log softmax y queremos extraer las probs de que pertenezcan 
             # a la solución, lo cual está en la columna 1
-            out = torch.exp(net(data.x, data.edge_index).T[1])
+            out = torch.exp(net(data)).T[1]
             
-            save(file, model, out, epoch)
+            save(file, model, out)
          
            
             c+=1

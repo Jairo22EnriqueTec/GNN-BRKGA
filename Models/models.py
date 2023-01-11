@@ -9,33 +9,35 @@ class GNN(torch.nn.Module):
         super().__init__()
         self.name = name_layer
         layer = None
+        hidden_feats = 64
+        
         if name_layer == "SAGE":
             layer = geom_nn.SAGEConv
-            hidden_feats = 16
+            
             self.conv1 = layer(num_node_features, hidden_feats)
             self.conv3 = Linear(hidden_feats, num_classes)
             
         elif name_layer == "GAT":
             layer = geom_nn.GATConv
-            hidden_feats = 16
+            
             self.conv1 = layer(num_node_features, hidden_feats)
             self.conv3 = Linear(hidden_feats, num_classes)
             
         elif name_layer == "GCN":
             layer = geom_nn.GCNConv
-            hidden_feats = 16
+            
             self.conv1 = layer(num_node_features, num_classes)
             #self.conv1 = layer(num_node_features, hidden_feats)
             #self.conv3 = Linear(hidden_feats, num_classes)
             
         elif name_layer == "GraphConv":
             layer = geom_nn.GraphConv
-            hidden_feats = 16
+            
             self.conv1 = layer(num_node_features, num_classes)
             
         elif name_layer == "SGConv":
             layer = geom_nn.SGConv
-            hidden_feats = 16
+            
             self.conv1 = layer(num_node_features, hidden_feats)
             self.conv3 = Linear(hidden_feats, num_classes)
         

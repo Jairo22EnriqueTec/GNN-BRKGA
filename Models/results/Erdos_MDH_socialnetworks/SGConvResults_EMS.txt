@@ -1,0 +1,17 @@
+graph_football,35,0.000000,115
+Amazon0302,41412,80.824000,262111
+graph_jazz,30,0.001000,198
+graph_karate,8,0.000000,62
+gemsec_facebook_artist,791,0.489000,50515
+ego-facebook,572,0.062000,4039
+graph_actors_dat,995,0.200000,10042
+graph_dolphins,3,0.000000,34
+graph_Email-Enron,2849,2.017000,36692
+graph_ncstrlwg2,1181,0.109000,6396
+soc-gplus,72,0.097000,23628
+socfb-Brandeis99,428,0.057000,3898
+socfb-Mich67,205,0.039000,3748
+socfb-nips-ego,10,0.010000,2888
+loc-gowalla_edges,5875,10.328000,196591
+deezer_HR,2548,0.723000,54573
+musae_git,237,0.201000,37700
