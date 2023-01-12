@@ -212,8 +212,8 @@ int main() {
     for (int m = 0; m < models.size(); ++m) {
         model = models[m];
             //string PATH_TO_SAVE = "../FastCover/results/scalefree/justprob/FastCoverResults_scalefree.txt";
-            PATH_TO_SAVE = "../"+directory+"/results/scalefree_I_socialnetworks/"+model+"Results_SIS.txt";
-            pathprob = "../"+directory+"/probabilidades/scalefree_socialnetworks/"+model;
+            PATH_TO_SAVE = "../"+directory+"/results/Erdos_I_socialnetworks/"+model+"Results_EIS.txt";
+            pathprob = "../"+directory+"/probabilidades/Erdos_socialnetworks/"+model;
             pathinstance = "instances/socialnetworks/dimacs/";
             //pathinstance = "instances/Erdos/test/dimacs/";
 
