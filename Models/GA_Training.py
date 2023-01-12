@@ -182,7 +182,8 @@ def Func(X, MDH = False):
 
 print(f"\nMDH value: {Func('_', MDH = True)}\n")
 
-for i in range(len(layers)):
+#for i in range(len(layers)):
+for i in range(1):
     
     print(f"\n -- Next layer {layers[i]} -- \n")
 
