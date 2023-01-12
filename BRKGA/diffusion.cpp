@@ -165,8 +165,8 @@ void evaluate(Individual& ind) {
     // si es MDH, entonces todos los individuos tienen la misma prob
     for (int i = 0; i < n_of_vertices; ++i) {
         options[i].node = i;
-        //options[i].value = double(degree[i])*(ind.vec)[i];
-        options[i].value = (ind.vec)[i];
+        options[i].value = double(degree[i])*(ind.vec)[i];
+        //options[i].value = (ind.vec)[i];
     }
     // se ordena la lista para recorrerse del mayor al menor
     sort(options.begin(), options.end(), option_compare);
@@ -198,8 +198,8 @@ void evaluate(Individual& ind) {
 int main() {
 
     vector<string> models = {
-        "GAT", "GraphConv", "GCN", "SAGE", "SGConv"
-        //"FC"
+        //"GAT", "GraphConv", "GCN", "SAGE", "SGConv"
+        "GCN"
     };
 
     string directory = "Models";
@@ -212,8 +212,8 @@ int main() {
     for (int m = 0; m < models.size(); ++m) {
         model = models[m];
             //string PATH_TO_SAVE = "../FastCover/results/scalefree/justprob/FastCoverResults_scalefree.txt";
-            PATH_TO_SAVE = "../"+directory+"/results/scalefree_I_Erdos/"+model+"Results_SIE.txt";
-            pathprob = "../"+directory+"/probabilidades/scalefree_Erdos/"+model;
+            PATH_TO_SAVE = "../"+directory+"/results/Erdos_MDH_Erdos/GA/"+model+"Results_EME.txt";
+            pathprob = "../"+directory+"/probabilidades/Erdos_Erdos/GA/"+model;
             //pathinstance = "instances/socialnetworks/dimacs/";
             pathinstance = "instances/Erdos/test/dimacs/";
 

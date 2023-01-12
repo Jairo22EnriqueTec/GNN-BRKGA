@@ -9,7 +9,7 @@ class GNN(torch.nn.Module):
         super().__init__()
         self.name = name_layer
         layer = None
-        hidden_feats = 64
+        hidden_feats = 16
         
         if name_layer == "SAGE":
             layer = geom_nn.SAGEConv
