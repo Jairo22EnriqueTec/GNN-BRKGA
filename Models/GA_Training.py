@@ -154,15 +154,23 @@ def getStateDict(model, params):
         #print(from_)
     return sd
 
-def Func(X, MDH = False):
+def SimpleweightedCrossEntropy(y, p, w):
+    return np.sum(y*(1-p)*w[0] + (1-y)*p*w[1]) / len(y)
+
+def Func(X, MDH = False, alpha = 0.7):
     # Objective function
+    
     if not MDH:
         sd = getStateDict(Models[i], X)
         Models[i].load_state_dict(sd)
-    
+    else:
+        alpha = 1
+        
     value = 0.0
+    loss = 0.0
     
     for ig, data in enumerate(Graphs_Train):
+        
         if MDH:
             y_pred = None
         else:
@@ -170,11 +178,28 @@ def Func(X, MDH = False):
             y_pred = torch.exp(Models[i](data)).T[1]
         
         
-        val = len(FindMinimumTarget(graphs[ig], out = y_pred, threshold = 0.5)[0]) / graphs[ig].number_of_nodes()
+        ts = len(FindMinimumTarget(graphs[ig], out = y_pred, threshold = 0.5)[0])
+        
+        val = ts / graphs[ig].number_of_nodes()
         
         value += val
+        
+        #"""
+        if not MDH:
+            zeros = np.zeros(data.num_nodes)
+            zeros[torch.topk(y_pred, ts)[1]] = 1
+            weigth_minoritaria = np.sum(zeros==0)/np.sum(zeros)
+            loss += SimpleweightedCrossEntropy(zeros, y_pred.detach().numpy(), [weigth_minoritaria, 1])
+        
+        #"""
+        
+        
     
-    return value / len(Graphs_Train)
+    value /= len(Graphs_Train) 
+    loss /= len(Graphs_Train) 
+    #return value
+    
+    return value * (alpha) + loss * (1 - alpha)
 
 
 # In[43]:
