@@ -1,0 +1,11 @@
+,BC,PageRank,closeness_centrality,EigenDegree,MDH,size
+graph_karate,12,8,13,10,8,62
+socfb-Mich67,418,250,246,204,206,3748
+graph_ncstrlwg2,1266,1103,1308,1314,1108,6396
+graph_CA-HepPh,1749,1519,1696,1821,1525,12008
+graph_CA-AstroPh,1963,1722,1763,1895,1637,18772
+musae_git,453,225,513,211,196,37700
+graph_CA-CondMat,3189,2884,3460,3610,2936,23133
+graph_Email-Enron,3107,2901,3034,3033,2880,36692
+gemsec_facebook_artist,1134,869,1127,834,789,50515
+deezer_HR,4814,3271,3763,2883,2377,54573
