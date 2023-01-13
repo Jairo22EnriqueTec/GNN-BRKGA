@@ -57,7 +57,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 # In[38]:
 
-    # python GA_Training.py -pi "../BRKGA/instances/scalefree/train/" -ps "./runs/scalefree/GA/" -s 13 -i 100 -pop 20 -elit 0.01
+# python GA_Training.py -pi "../BRKGA/instances/scalefree/train/" -ps "./runs/scalefree/GA/" -s 13 -i 100 -pop 20 -elit 0.01
 
 
 threshold = 0.5
@@ -208,7 +208,6 @@ def Func(X, MDH = False, alpha = 0.7):
 print(f"\nMDH value: {Func('_', MDH = True)}\n")
 
 for i in range(len(layers)):
-#for i in range(3,4):
     
     print(f"\n -- Next layer {layers[i]} -- \n")
 
@@ -224,6 +223,12 @@ for i in range(len(layers)):
     
     sd = getStateDict(Models[i], GA_model.best_variable)
     Models[i].load_state_dict(sd)
+    
+    plt.plot(GA_model.report)
+    plt.grid()
+    plt.title(f"{layers[i]}")
+    plt.savefig(PATH_SAVE_TRAINS + f"{layers[i]}.png");
+    plt.clf()
     
     
     torch.save(Models[i].state_dict(), 
