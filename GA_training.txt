@@ -1,0 +1,11 @@
+Scale
+0.1098 - MDH
+0.1427 - GCN
+0.107 - GCN*
+0.1041 - Óptima
+
+Erdos
+0.1974 - MDH
+0.1999 - GCN
+0.1824 - GCN*
+0.1829 - Optimal
