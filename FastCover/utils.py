@@ -198,7 +198,7 @@ FEATURE_TYPE_DICT = {
     "1": gen_one_feature,
 }
 
-def Convert2DataSet(Graphs, Optimals, feats = None):
+def Convert2DataSet(Graphs, Optimals, feats = None, scale = True):
     g = []
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     if np.all(feats == None):
@@ -209,7 +209,7 @@ def Convert2DataSet(Graphs, Optimals, feats = None):
         labels = np.zeros(NumNodes)
         labels[OptimalSet] = 1
 
-        dataset = CreateDataset(G, labels, feats = feat)
+        dataset = CreateDataset(G, labels, feats = feat, scale = scale)
         data = dataset[0]
 
         data =  data.to(device)

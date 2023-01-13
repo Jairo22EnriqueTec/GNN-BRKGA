@@ -4,7 +4,7 @@ import torch
 import numpy as np
 
 class CreateDataset(InMemoryDataset):
-    def __init__(self, G, labels, transform = None, feats = None):
+    def __init__(self, G, labels, transform = None, feats = None, scale = True):
         super(CreateDataset, self).__init__('.', transform, None, None)
 
         adj = nx.to_scipy_sparse_matrix(G).tocoo()
@@ -24,8 +24,12 @@ class CreateDataset(InMemoryDataset):
             embeddings = feats
         
         # Se escalan los embeddings para obtener medidas que pueda aprender la red
-        embeddings = (embeddings - np.min(embeddings, axis = 0)) /\
+        if scale:
+            embeddings = (embeddings - np.min(embeddings, axis = 0)) /\
                      ( np.max(embeddings, axis = 0) - np.min(embeddings, axis = 0) )
+        else:
+            embeddings = (embeddings - np.mean(embeddings, axis = 0)) /\
+                     np.std(embeddings, axis = 0)
         
         data.num_nodes = G.number_of_nodes()
         
