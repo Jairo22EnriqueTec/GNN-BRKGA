@@ -14,7 +14,8 @@ import torch.nn.functional as F
 from torch_geometric.nn import GCNConv
 import torch_geometric.nn as geom_nn
 
-from geneticalgorithm import geneticalgorithm as ga
+#from geneticalgorithm import geneticalgorithm as ga
+from OwnGenetical import geneticalgorithm as ga
 import sys
 
 
@@ -66,7 +67,7 @@ dt_string = datetime.now().strftime("%m-%d_%H-%M")
 
 
 # In[39]:
-
+## ========================== SCALE FREE =====================================
 
 Instances = [graph for graph in os.listdir(PATH_TO_TRAIN + 'txt')]
 
@@ -112,8 +113,50 @@ num_features = Graphs_Train[0].num_features
 num_classes = Graphs_Train[0].num_classes
 
 
-# In[40]:
+# ======================== ERDOS =================
+PATH_TO_TRAIN_er = "../BRKGA/instances/Erdos/train/"
+Instances_er = [graph for graph in os.listdir(PATH_TO_TRAIN_er + 'txt')]
 
+graphs_er = []
+for er in Instances_er:
+    graph = igraph.Graph.Read_Edgelist(PATH_TO_TRAIN_er+"txt/"+er, directed = False)
+    graphs_er.append(graph.to_networkx())    
+
+OptInstances_er = [graph for graph in os.listdir(PATH_TO_TRAIN_er+'optimal')]
+Solutions_er = []
+for er in OptInstances_er:
+    opt = []
+    with open(PATH_TO_TRAIN_er+'optimal/'+er) as f:
+        for line in f.readlines():
+            opt.append(int(line.replace("\n", "")))
+    Solutions_er.append(opt)   
+
+
+print("\nCargando Features...\n")
+graphFeatures_er = [feat for feat in os.listdir(PATH_TO_TRAIN_er+'feats')]
+Features_er = []
+for er in graphFeatures_er:
+    temp = []
+    try:
+        with open(PATH_TO_TRAIN_er+'feats/'+er) as f:
+            c = 0
+
+            for line in f.readlines()[1:]:
+                c+=1
+                feats = np.array(line.split(","), dtype = float)
+                temp.append(feats)
+        temp = np.array(temp)
+        #temp = np.delete(temp, 2, 1)
+        Features_er.append(temp)
+    except:
+        print(er)
+        print(line)
+        print(c)
+    
+Graphs_Train_Erdos = Convert2DataSet(graphs_er, Solutions_er, feats = Features_er)
+
+
+# ========================
 
 layers = ["GCN", "GAT","GraphConv", "SAGE", "SGConv"]
 
@@ -153,6 +196,7 @@ def getStateDict(model, params):
         from_ += m
         #print(from_)
     return sd
+
 
 def SimpleweightedCrossEntropy(y, p, w):
     return np.sum(y*(1-p)*w[0] + (1-y)*p*w[1]) / len(y)
@@ -201,6 +245,54 @@ def Func(X, MDH = False, alpha = 0.7):
     
     return value * (alpha) + loss * (1 - alpha)
 
+def Func2(X, MDH = False, alpha = 0.7, scalefree = True):
+    # Objective function
+    
+    if not MDH:
+        sd = getStateDict(Models[i], X)
+        Models[i].load_state_dict(sd)
+    else:
+        alpha = 1
+        
+    value = 0.0
+    loss = 0.0
+    
+    if scalefree:
+        Graphs_Train = Graphs_Train_Erdos
+    
+    
+    for ig, data in enumerate(Graphs_Train):
+        
+        if MDH:
+            y_pred = None
+        else:
+            data = data.to(device)
+            y_pred = torch.exp(Models[i](data)).T[1]
+        
+        
+        ts = len(FindMinimumTarget(graphs_er[ig], out = y_pred, threshold = 0.5)[0])
+        
+        val = ts / graphs_er[ig].number_of_nodes()
+        
+        value += val
+        
+        #"""
+        if not MDH:
+            zeros = np.zeros(data.num_nodes)
+            zeros[torch.topk(y_pred, ts)[1]] = 1
+            weigth_minoritaria = np.sum(zeros==0)/np.sum(zeros)
+            loss += SimpleweightedCrossEntropy(zeros, y_pred.detach().numpy(), [weigth_minoritaria, 1])
+        
+        #"""
+        
+        
+    
+    value /= len(Graphs_Train) 
+    loss /= len(Graphs_Train) 
+    #return value
+    
+    return value * (alpha) + loss * (1 - alpha)
+
 
 # In[43]:
 
@@ -215,7 +307,9 @@ for i in range(len(layers)):
 
     algorithm_param = {'max_num_iteration' : max_iterations,                       'population_size' : pop_size,                       'mutation_probability' : 0.4,                       'elit_ratio': elitratio,                       'crossover_probability': 0.5,                       'parents_portion': 0.3,                       'crossover_type' : 'uniform',                       'max_iteration_without_improv' : max_iterations//2}
 
-    GA_model = ga(function = Func,                dimension = getDimParams(Models[i]),                variable_type = 'real',                variable_boundaries = varbound,                algorithm_parameters = algorithm_param,
+    GA_model = ga(function = Func,
+                  secondfunc = Func2,
+                  dimension = getDimParams(Models[i]),                variable_type = 'real',                variable_boundaries = varbound,                algorithm_parameters = algorithm_param,
                 function_timeout = 1_000_000,
                 convergence_curve = False)
 
@@ -224,8 +318,10 @@ for i in range(len(layers)):
     sd = getStateDict(Models[i], GA_model.best_variable)
     Models[i].load_state_dict(sd)
     
-    plt.plot(GA_model.report)
+    plt.plot(GA_model.report, label = "scalefree")
+    plt.plot(GA_model.reportsecond, label = "Erdos")
     plt.grid()
+    plt.legend()
     plt.title(f"{layers[i]}")
     plt.savefig(PATH_SAVE_TRAINS + f"{layers[i]}.png");
     plt.clf()

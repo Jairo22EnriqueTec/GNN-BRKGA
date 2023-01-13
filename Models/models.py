@@ -9,19 +9,19 @@ class GNN(torch.nn.Module):
         super().__init__()
         self.name = name_layer
         layer = None
-        hidden_feats = 16
+        hidden_feats = 32
         
         if name_layer == "SAGE":
             layer = geom_nn.SAGEConv
             
-            self.conv1 = layer(num_node_features, hidden_feats)
-            self.conv3 = Linear(hidden_feats, num_classes)
+            self.conv1 = layer(num_node_features, num_classes)
+            #self.conv3 = Linear(hidden_feats, num_classes)
             
         elif name_layer == "GAT":
             layer = geom_nn.GATConv
             
-            self.conv1 = layer(num_node_features, hidden_feats)
-            self.conv3 = Linear(hidden_feats, num_classes)
+            self.conv1 = layer(num_node_features, num_classes)
+            #self.conv3 = Linear(hidden_feats, num_classes)
             
         elif name_layer == "GCN":
             layer = geom_nn.GCNConv
@@ -38,8 +38,8 @@ class GNN(torch.nn.Module):
         elif name_layer == "SGConv":
             layer = geom_nn.SGConv
             
-            self.conv1 = layer(num_node_features, hidden_feats)
-            self.conv3 = Linear(hidden_feats, num_classes)
+            self.conv1 = layer(num_node_features, num_classes)
+            #self.conv3 = Linear(hidden_feats, num_classes)
         
         
         else:
@@ -58,8 +58,8 @@ class GNN(torch.nn.Module):
         #x = self.conv2(x, edge_index)
 
         #return F.log_softmax(self.conv3(x), dim=1)
-        if self.name in ['GraphConv', 'GCN']:
-            return F.log_softmax(x, dim=1)
-        else:
-            return F.log_softmax(self.conv3(x), dim=1)
+        #if self.name in ['GraphConv', 'GCN', 'SAGE']:
+        return F.log_softmax(x, dim=1)
+        #else:
+        #    return F.log_softmax(self.conv3(x), dim=1)
         
