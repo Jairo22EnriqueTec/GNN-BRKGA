@@ -70,6 +70,7 @@ dt_string = datetime.now().strftime("%m-%d_%H-%M")
 ## ========================== SCALE FREE =====================================
 
 Instances = [graph for graph in os.listdir(PATH_TO_TRAIN + 'txt')]
+Instances.sort()
 
 graphs = []
 for er in Instances:
@@ -77,6 +78,8 @@ for er in Instances:
     graphs.append(graph.to_networkx())    
 
 OptInstances = [graph for graph in os.listdir(PATH_TO_TRAIN+'optimal')]
+OptInstances.sort()
+
 Solutions = []
 for er in OptInstances:
     opt = []
@@ -88,6 +91,8 @@ for er in OptInstances:
 
 print("\nCargando Features...\n")
 graphFeatures = [feat for feat in os.listdir(PATH_TO_TRAIN+'feats')]
+graphFeatures.sort()
+
 Features = []
 for er in graphFeatures:
     temp = []
@@ -116,6 +121,7 @@ num_classes = Graphs_Train[0].num_classes
 # ======================== ERDOS =================
 PATH_TO_TRAIN_er = "../BRKGA/instances/Erdos/train/"
 Instances_er = [graph for graph in os.listdir(PATH_TO_TRAIN_er + 'txt')]
+Instances_er.sort()
 
 graphs_er = []
 for er in Instances_er:
@@ -123,7 +129,10 @@ for er in Instances_er:
     graphs_er.append(graph.to_networkx())    
 
 OptInstances_er = [graph for graph in os.listdir(PATH_TO_TRAIN_er+'optimal')]
+OptInstances_er.sort()
+
 Solutions_er = []
+
 for er in OptInstances_er:
     opt = []
     with open(PATH_TO_TRAIN_er+'optimal/'+er) as f:
@@ -134,6 +143,8 @@ for er in OptInstances_er:
 
 print("\nCargando Features...\n")
 graphFeatures_er = [feat for feat in os.listdir(PATH_TO_TRAIN_er+'feats')]
+graphFeatures_er.sort()
+
 Features_er = []
 for er in graphFeatures_er:
     temp = []
@@ -158,7 +169,7 @@ Graphs_Train_Erdos = Convert2DataSet(graphs_er, Solutions_er, feats = Features_e
 
 # ========================
 
-layers = ["GCN", "GAT","GraphConv", "SAGE", "SGConv"]
+layers = ["SAGE", "GCN", "SGConv", "GAT","GraphConv"]
 
 torch.manual_seed(SEED)
 Models = [GNN(num_features, num_classes, name_layer = layer_name) for 
@@ -311,20 +322,14 @@ for i in range(len(layers)):
                   secondfunc = Func2,
                   dimension = getDimParams(Models[i]),                variable_type = 'real',                variable_boundaries = varbound,                algorithm_parameters = algorithm_param,
                 function_timeout = 1_000_000,
-                convergence_curve = False)
+                convergence_curve = False, name = layers[i], ps = PATH_SAVE_TRAINS)
 
     GA_model.run()
     
     sd = getStateDict(Models[i], GA_model.best_variable)
     Models[i].load_state_dict(sd)
     
-    plt.plot(GA_model.report, label = "scalefree")
-    plt.plot(GA_model.reportsecond, label = "Erdos")
-    plt.grid()
-    plt.legend()
-    plt.title(f"{layers[i]}")
-    plt.savefig(PATH_SAVE_TRAINS + f"{layers[i]}.png");
-    plt.clf()
+    
     
     
     torch.save(Models[i].state_dict(), 

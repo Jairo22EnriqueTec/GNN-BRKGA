@@ -60,7 +60,7 @@ class geneticalgorithm():
                 algorithm over iterations
     '''
     #############################################################
-    def __init__(self, function, secondfunc, dimension, variable_type='bool',                  variable_boundaries=None,                 variable_type_mixed=None,                  function_timeout=10,                 algorithm_parameters={'max_num_iteration': None,                                       'population_size':100,                                       'mutation_probability':0.1,                                       'elit_ratio': 0.01,                                       'crossover_probability': 0.5,                                       'parents_portion': 0.3,                                       'crossover_type':'uniform',                                       'max_iteration_without_improv':None},                     convergence_curve=True,                         progress_bar=True):
+    def __init__(self, function, secondfunc, dimension, variable_type='bool',                  variable_boundaries=None,                 variable_type_mixed=None,                  function_timeout=10,                 algorithm_parameters={'max_num_iteration': None,                                       'population_size':100,                                       'mutation_probability':0.1,                                       'elit_ratio': 0.01,                                       'crossover_probability': 0.5,                                       'parents_portion': 0.3,                                       'crossover_type':'uniform',                                       'max_iteration_without_improv':None},                     convergence_curve=True,                         progress_bar=True, name = "", ps = ""):
 
 
         '''
@@ -117,6 +117,8 @@ class geneticalgorithm():
         '''
         self.secondfunc = secondfunc
         self.__name__=geneticalgorithm
+        self.namesave = name
+        self.ps = ps
         #############################################################
         # input function
         assert (callable(function)),"function must be callable"     
@@ -310,7 +312,17 @@ class geneticalgorithm():
             self.report.append(pop[0,self.dim])
             self.reportsecond.append(self.secondfunc(self.best_variable))
             # AQUI
-    
+            with open(self.ps + f'{self.namesave}_iter_{t}.txt', 'w') as f:
+                for line in self.best_variable:
+                    f.write(str(line) + "\n")
+                    
+            plt.plot(self.report, label = "scalefree")
+            plt.plot(self.reportsecond, label = "Erdos")
+            plt.grid()
+            plt.legend()
+            plt.title(f"{self.namesave}")
+            plt.savefig(self.ps + f"{self.namesave}.png");
+            plt.clf()
             ##############################################################         
             # Normalizing objective function 
             
@@ -406,6 +418,14 @@ class geneticalgorithm():
 
         self.report.append(pop[0,self.dim])
         self.reportsecond.append(self.secondfunc(self.best_variable))
+        
+        plt.plot(self.report, label = "scalefree")
+        plt.plot(self.reportsecond, label = "Erdos")
+        plt.grid()
+        plt.legend()
+        plt.title(f"{self.namesave}")
+        plt.savefig(self.ps + f"{self.namesave}.png");
+        plt.clf()
         
  
         
