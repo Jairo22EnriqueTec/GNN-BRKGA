@@ -105,7 +105,7 @@ for er in graphFeatures:
                 feats = np.array(line.split(","), dtype = float)
                 temp.append(feats)
         temp = np.array(temp)
-        #temp = np.delete(temp, 0, 1)
+        temp = np.delete(temp, 0, 1)
         Features.append(temp)
     except:
         print(er)
@@ -157,7 +157,7 @@ for er in graphFeatures_er:
                 feats = np.array(line.split(","), dtype = float)
                 temp.append(feats)
         temp = np.array(temp)
-        #temp = np.delete(temp, 0, 1)
+        temp = np.delete(temp, 0, 1)
         Features_er.append(temp)
     except:
         print(er)
