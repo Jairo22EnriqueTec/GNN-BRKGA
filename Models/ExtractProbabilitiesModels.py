@@ -109,13 +109,13 @@ for run_name, model, seed in zip(RUNS_LIST, MODELS, SEEDS):
             print(f"Loading {PATH_TO_TEST}txt/{file} ...")
             name = file.split(".")[0].replace("graph_", "")
 
-            graph = igraph.Graph().Read_Edgelist(PATH_TO_TEST +"txt/"+ file)
-            data = Convert2DataSet([graph.to_networkx()], [[]], [feat])[0]
+            graph = igraph.Graph.Read_Edgelist(PATH_TO_TEST +"txt/"+ file, directed = False).to_networkx()
+            data = Convert2DataSet([graph], [[]], [feat])[0]
             
 
-            G = graph.to_networkx().to_undirected()
+            #G = graph.to_networkx().to_undirected()
 
-            n = len(G.nodes())
+            n = len(graph.nodes())
             
             start_time = time.time()
 

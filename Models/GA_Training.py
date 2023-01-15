@@ -105,7 +105,7 @@ for er in graphFeatures:
                 feats = np.array(line.split(","), dtype = float)
                 temp.append(feats)
         temp = np.array(temp)
-        #temp = np.delete(temp, 2, 1)
+        #temp = np.delete(temp, 0, 1)
         Features.append(temp)
     except:
         print(er)
@@ -157,7 +157,7 @@ for er in graphFeatures_er:
                 feats = np.array(line.split(","), dtype = float)
                 temp.append(feats)
         temp = np.array(temp)
-        #temp = np.delete(temp, 2, 1)
+        #temp = np.delete(temp, 0, 1)
         Features_er.append(temp)
     except:
         print(er)
@@ -310,7 +310,8 @@ def Func2(X, MDH = False, alpha = 0.7, scalefree = True):
 
 print(f"\nMDH value: {Func('_', MDH = True)}\n")
 
-for i in range(len(layers)):
+#for i in range(len(layers)):
+for i in range(1):
     
     print(f"\n -- Next layer {layers[i]} -- \n")
 
