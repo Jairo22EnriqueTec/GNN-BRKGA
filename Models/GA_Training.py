@@ -223,7 +223,7 @@ def Func(X, MDH = False, alpha = 0.7):
     value = 0.0
     loss = 0.0
     
-    for ig, data in enumerate(Graphs_Train_er):
+    for ig, data in enumerate(Graphs_Train_Erdos):
         
         if MDH:
             y_pred = None
@@ -234,7 +234,7 @@ def Func(X, MDH = False, alpha = 0.7):
         
         ts = len(FindMinimumTarget(graphs_er[ig], out = y_pred, threshold = 0.5)[0])
         
-        val = ts / graphs[ig].number_of_nodes()
+        val = ts / graphs_er[ig].number_of_nodes()
         
         value += val
         
@@ -249,8 +249,8 @@ def Func(X, MDH = False, alpha = 0.7):
         
         
     
-    value /= len(Graphs_Train_er) 
-    loss /= len(Graphs_Train_er) 
+    value /= len(Graphs_Train_Erdos) 
+    loss /= len(Graphs_Train_Erdos) 
     #return value
     
     return value * (alpha) + loss * (1 - alpha)
@@ -282,7 +282,7 @@ def Func2(X, MDH = False, alpha = 0.7, scalefree = True):
         
         ts = len(FindMinimumTarget(graphs[ig], out = y_pred, threshold = 0.5)[0])
         
-        val = ts / graphs_er[ig].number_of_nodes()
+        val = ts / graphs[ig].number_of_nodes()
         
         value += val
         
