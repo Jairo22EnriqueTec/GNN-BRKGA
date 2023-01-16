@@ -66,7 +66,6 @@ threshold = 0.5
 dt_string = datetime.now().strftime("%m-%d_%H-%M")
 
 
-# In[39]:
 ## ========================== SCALE FREE =====================================
 
 Instances = [graph for graph in os.listdir(PATH_TO_TRAIN + 'txt')]
@@ -224,7 +223,7 @@ def Func(X, MDH = False, alpha = 0.7):
     value = 0.0
     loss = 0.0
     
-    for ig, data in enumerate(Graphs_Train):
+    for ig, data in enumerate(Graphs_Train_er):
         
         if MDH:
             y_pred = None
@@ -233,7 +232,7 @@ def Func(X, MDH = False, alpha = 0.7):
             y_pred = torch.exp(Models[i](data)).T[1]
         
         
-        ts = len(FindMinimumTarget(graphs[ig], out = y_pred, threshold = 0.5)[0])
+        ts = len(FindMinimumTarget(graphs_er[ig], out = y_pred, threshold = 0.5)[0])
         
         val = ts / graphs[ig].number_of_nodes()
         
@@ -250,8 +249,8 @@ def Func(X, MDH = False, alpha = 0.7):
         
         
     
-    value /= len(Graphs_Train) 
-    loss /= len(Graphs_Train) 
+    value /= len(Graphs_Train_er) 
+    loss /= len(Graphs_Train_er) 
     #return value
     
     return value * (alpha) + loss * (1 - alpha)
@@ -268,8 +267,8 @@ def Func2(X, MDH = False, alpha = 0.7, scalefree = True):
     value = 0.0
     loss = 0.0
     
-    if scalefree:
-        Graphs_Train = Graphs_Train_Erdos
+    #if scalefree:
+    #    Graphs_Train = Graphs_Train_Erdos
     
     
     for ig, data in enumerate(Graphs_Train):
@@ -281,7 +280,7 @@ def Func2(X, MDH = False, alpha = 0.7, scalefree = True):
             y_pred = torch.exp(Models[i](data)).T[1]
         
         
-        ts = len(FindMinimumTarget(graphs_er[ig], out = y_pred, threshold = 0.5)[0])
+        ts = len(FindMinimumTarget(graphs[ig], out = y_pred, threshold = 0.5)[0])
         
         val = ts / graphs_er[ig].number_of_nodes()
         
