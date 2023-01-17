@@ -419,8 +419,8 @@ class geneticalgorithm():
         self.report.append(pop[0,self.dim])
         self.reportsecond.append(self.secondfunc(self.best_variable))
         
-        plt.plot(self.report, label = "scalefree")
-        plt.plot(self.reportsecond, label = "Erdos")
+        plt.plot(self.report, label = "Erdos")
+        plt.plot(self.reportsecond, label = "Scalefree")
         plt.grid()
         plt.legend()
         plt.title(f"{self.namesave}")

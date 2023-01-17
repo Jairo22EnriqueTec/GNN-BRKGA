@@ -36,7 +36,7 @@ typedef boost::property_map<Graph, boost::vertex_index_t>::type VertexIndexMap;
 int main()
 {
     Graph g;
-    string pathinstance = "instances/socialnetworks/dimacs/";
+    string pathinstance = "./instances/dimacs/";
     string graphs = "com-youtube.ungraph";
     //com-youtube.ungraph
     string inputFile = pathinstance + graphs+".dimacs";
