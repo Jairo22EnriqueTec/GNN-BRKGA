@@ -166,8 +166,8 @@ void evaluate(Individual& ind) {
     // si es MDH, entonces todos los individuos tienen la misma prob
     for (int i = 0; i < n_of_vertices; ++i) {
         options[i].node = i;
-        //options[i].value = double(degree[i])*(ind.vec)[i];
-        options[i].value = (ind.vec)[i];
+        options[i].value = double(degree[i])*(ind.vec)[i];
+        //options[i].value = (ind.vec)[i];
     }
     // se ordena la lista para recorrerse del mayor al menor
     sort(options.begin(), options.end(), option_compare);
@@ -199,8 +199,9 @@ void evaluate(Individual& ind) {
 int main() {
 
     vector<string> models = {
-        "GCN", "GAT", "GraphConv", "SAGE", "SGConv"
-        //"SAGE"
+        //"GCN", "GAT", "GraphConv", "SAGE", "SGConv"
+        //"SAGE75", "SAGE100"
+        "SAGE30"
     };
 
     string directory = "Models";
@@ -213,8 +214,8 @@ int main() {
     for (int m = 0; m < models.size(); ++m) {
         model = models[m];
             //string PATH_TO_SAVE = "../FastCover/results/scalefree/justprob/FastCoverResults_scalefree.txt";
-            PATH_TO_SAVE = "../"+directory+"/results/scalefree_I_socialnetworks/Pruebas_GA/Allfeatures/"+model+"Results_SIS.txt";
-            pathprob = "../"+directory+"/probabilidades/scalefree_socialnetworks/Pruebas_GA/Allfeatures/"+model;
+            PATH_TO_SAVE = "../"+directory+"/results/scalefree_MDH_socialnetworks/Pruebas_GA/TwoLayers/"+model+"Results_SMS.txt";
+            pathprob = "../"+directory+"/probabilidades/scalefree_socialnetworks/Pruebas_GA/TwoLayers/"+model;
             pathinstance = "instances/socialnetworks/dimacs/";
 
             //PATH_TO_SAVE = "../"+directory+"/results/scalefree_MDH_Erdos/Pruebas_GA/MoreTrain/SinBC/"+model+"Results_SME.txt";

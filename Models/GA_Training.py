@@ -223,54 +223,6 @@ def Func(X, MDH = False, alpha = 0.7):
     value = 0.0
     loss = 0.0
     
-    for ig, data in enumerate(Graphs_Train_Erdos):
-        
-        if MDH:
-            y_pred = None
-        else:
-            data = data.to(device)
-            y_pred = torch.exp(Models[i](data)).T[1]
-        
-        
-        ts = len(FindMinimumTarget(graphs_er[ig], out = y_pred, threshold = 0.5)[0])
-        
-        val = ts / graphs_er[ig].number_of_nodes()
-        
-        value += val
-        
-        #"""
-        if not MDH:
-            zeros = np.zeros(data.num_nodes)
-            zeros[torch.topk(y_pred, ts)[1]] = 1
-            weigth_minoritaria = np.sum(zeros==0)/np.sum(zeros)
-            loss += SimpleweightedCrossEntropy(zeros, y_pred.detach().numpy(), [weigth_minoritaria, 1])
-        
-        #"""
-        
-        
-    
-    value /= len(Graphs_Train_Erdos) 
-    loss /= len(Graphs_Train_Erdos) 
-    #return value
-    
-    return value * (alpha) + loss * (1 - alpha)
-
-def Func2(X, MDH = False, alpha = 0.7, scalefree = True):
-    # Objective function
-    
-    if not MDH:
-        sd = getStateDict(Models[i], X)
-        Models[i].load_state_dict(sd)
-    else:
-        alpha = 1
-        
-    value = 0.0
-    loss = 0.0
-    
-    #if scalefree:
-    #    Graphs_Train = Graphs_Train_Erdos
-    
-    
     for ig, data in enumerate(Graphs_Train):
         
         if MDH:
@@ -299,6 +251,54 @@ def Func2(X, MDH = False, alpha = 0.7, scalefree = True):
     
     value /= len(Graphs_Train) 
     loss /= len(Graphs_Train) 
+    #return value
+    
+    return value * (alpha) + loss * (1 - alpha)
+
+def Func2(X, MDH = False, alpha = 0.7, scalefree = True):
+    # Objective function
+    
+    if not MDH:
+        sd = getStateDict(Models[i], X)
+        Models[i].load_state_dict(sd)
+    else:
+        alpha = 1
+        
+    value = 0.0
+    loss = 0.0
+    
+    #if scalefree:
+    #    Graphs_Train = Graphs_Train_Erdos
+    
+    
+    for ig, data in enumerate(Graphs_Train_Erdos):
+        
+        if MDH:
+            y_pred = None
+        else:
+            data = data.to(device)
+            y_pred = torch.exp(Models[i](data)).T[1]
+        
+        
+        ts = len(FindMinimumTarget(graphs_er[ig], out = y_pred, threshold = 0.5)[0])
+        
+        val = ts / graphs_er[ig].number_of_nodes()
+        
+        value += val
+        
+        #"""
+        if not MDH:
+            zeros = np.zeros(data.num_nodes)
+            zeros[torch.topk(y_pred, ts)[1]] = 1
+            weigth_minoritaria = np.sum(zeros==0)/np.sum(zeros)
+            loss += SimpleweightedCrossEntropy(zeros, y_pred.detach().numpy(), [weigth_minoritaria, 1])
+        
+        #"""
+        
+        
+    
+    value /= len(Graphs_Train_Erdos) 
+    loss /= len(Graphs_Train_Erdos) 
     #return value
     
     return value * (alpha) + loss * (1 - alpha)
