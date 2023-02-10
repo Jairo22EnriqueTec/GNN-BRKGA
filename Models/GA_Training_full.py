@@ -116,7 +116,18 @@ Graphs_Train_Erdos, graphs_er = CargarDataset(PATH_TO_TRAIN_er)
 layers = ["SAGE", "GCN", "SGConv", "GAT","GraphConv"]
 
 torch.manual_seed(SEED)
-Models = [GNN(num_features, num_classes, name_layer = layer_name) for 
+
+cant_layers = [1]*5
+cant_layers += [2]*5
+cant_layers += [3]*5
+
+Models = [GNN(num_features, num_classes, name_layer = layer_name, num_layers = 1) for 
+         layer_name in layers]
+
+Models += [GNN(num_features, num_classes, name_layer = layer_name, num_layers = 2) for 
+         layer_name in layers]
+
+Models += [GNN(num_features, num_classes, name_layer = layer_name, num_layers = 3) for 
          layer_name in layers]
 
 # ============== Funciones para el entreno ==============
@@ -244,50 +255,71 @@ def Func2(X, MDH = False, alpha = 0.7, scalefree = True):
 
 print(f"\nMDH value: {Func('_', MDH = True)}\n")
 
-#for i in range(len(layers)):
-for i in range(1):
-    
-    print(f"\n -- Next layer {layers[i]} -- \n")
-    
-    # Para cada modelo, se establece el límite de cada valor
-    varbound = np.array([[-10,10]] * getDimParams( Models[i]) )
-    
-    # Se inicializan los parámetros del algoritmo genético
-    algorithm_param = {'max_num_iteration' : max_iterations,
-                       'population_size' : pop_size,                       
-                       'mutation_probability' : 0.4,                       
-                       'elit_ratio': elitratio,                       
-                       'crossover_probability': 0.5,                       
-                       'parents_portion': 0.3,                       
-                       'crossover_type' : 'uniform',                       
-                       'max_iteration_without_improv' : max_iterations//2}
-    
-    # se correo el modelo
-    GA_model = ga(function = Func,
-                  secondfunc = Func2,
-                  dimension = getDimParams(Models[i]),                
-                  variable_type = 'real',                
-                  variable_boundaries = varbound,                
-                  algorithm_parameters = algorithm_param,
-                  function_timeout = 1_000_000,
-                  convergence_curve = False, 
-                  name = layers[i], 
-                  ps = PATH_SAVE_TRAINS)
-    
-    # NOTA: las curvas de aprendizaje se generan y se guardan dentro de la función "ga"
-    # es importante brindar el name que irá arriba del gráfico y el "ps" path to save 
-    # para guardar los parámetros en cada iteración.
-    
-    GA_model.run()
-    
-    # se extraé el mejor individuo al final del GA y se carga dentro del modelo
-    sd = getStateDict(Models[i], GA_model.best_variable)
-    Models[i].load_state_dict(sd)
-    
-    
-    
-    # Finalmente se guarda en state_dict del mejor.
-    torch.save(Models[i].state_dict(), 
-                       f=f"{PATH_SAVE_TRAINS}{layers[i]}_seed_{SEED}_thr_{int(threshold*10)}_date_{dt_string}.pt")
+mutations = [0.1, 0.2, 0.3, 0.4]
+cross_overs = [0.6, 0.5, 0.4, 0.3]
+crossover_types = ["one_point", "two_point", "uniform"]
+Max_iterations = [3, 4]
+#Max_iterations = [100, 200, 300]
+
+
+for mutation in mutations:
+    for cross_over in cross_overs:
+        for crossover_type in crossover_types:
+            for Max_iteration in Max_iterations:
+                for i in range(len(layers)):
+                    dir_name = f"{PATH_SAVE_TRAINS}{layers[i]}_{cant_layers[i]}_mut_{mutation:.1f}_cross_{cross_over:.1f}_type_{crossover_type}_iter_{Max_iteration}/"
+                    if not os.path.exists(dir_name):
+                        os.mkdir(dir_name)
+
+                    print(f"\n -- Next layer {layers[i]} -- \n")
+
+                    # Para cada modelo, se establece el límite de cada valor
+                    varbound = np.array([[-10,10]] * getDimParams( Models[i]) )
+
+                    # Se inicializan los parámetros del algoritmo genético
+                    algorithm_param = {'max_num_iteration' : Max_iteration,
+                                       'population_size' : pop_size,                       
+                                       'mutation_probability' : mutation, 
+                                       'elit_ratio': elitratio,                       
+                                       'crossover_probability': cross_over,                       
+                                       'parents_portion': 0.3,                       
+                                       'crossover_type' : crossover_type,                       
+                                       'max_iteration_without_improv' : max_iterations//2}
+
+                    # se correo el modelo
+                    GA_model = ga(function = Func,
+                                  secondfunc = Func2,
+                                  dimension = getDimParams(Models[i]),                
+                                  variable_type = 'real',                
+                                  variable_boundaries = varbound,                
+                                  algorithm_parameters = algorithm_param,
+                                  function_timeout = 1_000_000,
+                                  convergence_curve = False, 
+                                  name = layers[i], 
+                                  ps = dir_name)
+
+                    # NOTA: las curvas de aprendizaje se generan y se guardan dentro de la función "ga"
+                    # es importante brindar el name que irá arriba del gráfico y el "ps" path to save 
+                    # para guardar los parámetros en cada iteración.
+
+                    GA_model.run()
+
+                    # se extraé el mejor individuo al final del GA y se carga dentro del modelo
+                    sd = getStateDict(Models[i], GA_model.best_variable)
+                    Models[i].load_state_dict(sd)
+
+                    r1 = Func(GA_model.best_variable)
+                    r2 = Func2(GA_model.best_variable)
+
+
+
+                    with open(dir_name+'Res.npy', 'wb') as f:
+                        np.save(f, np.array([r1, r2]), allow_pickle = True)
+
+
+
+                    # Finalmente se guarda en state_dict del mejor.
+                    torch.save(Models[i].state_dict(), 
+                                       f=f"{dir_name}{layers[i]}_seed_{SEED}_thr_{int(threshold*10)}_date_{dt_string}.pt")
 
 

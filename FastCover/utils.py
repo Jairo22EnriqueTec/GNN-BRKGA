@@ -198,11 +198,13 @@ FEATURE_TYPE_DICT = {
     "1": gen_one_feature,
 }
 
-def Convert2DataSet(Graphs, Optimals, feats = None, scale = True):
+def Convert2DataSet(Graphs, Optimals = None, feats = None, scale = True):
     g = []
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     if np.all(feats == None):
-        feats = [None] * len(Optimals)
+        feats = [None] * len(Graphs)
+    if np.all(Optimals == None):
+        Optimals = [0] * len(Graphs)
         
     for G, OptimalSet, feat in zip(Graphs, Optimals, feats):
         NumNodes = G.number_of_nodes()

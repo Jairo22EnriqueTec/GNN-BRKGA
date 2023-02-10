@@ -312,9 +312,11 @@ class geneticalgorithm():
             self.report.append(pop[0,self.dim])
             self.reportsecond.append(self.secondfunc(self.best_variable))
             # AQUI
-            with open(self.ps + f'{self.namesave}_iter_{t}.txt', 'w') as f:
-                for line in self.best_variable:
-                    f.write(str(line) + "\n")
+            with open(self.ps + f'{self.namesave}_iter_{t}.npy', 'wb') as f:
+                np.save(f, np.array(self.best_variable), allow_pickle = True)
+                
+                #for line in self.best_variable:
+                #    f.write(str(line) + "\n")
                     
             plt.plot(self.report, label = "scalefree")
             plt.plot(self.reportsecond, label = "Erdos")
@@ -419,13 +421,17 @@ class geneticalgorithm():
         self.report.append(pop[0,self.dim])
         self.reportsecond.append(self.secondfunc(self.best_variable))
         
-        plt.plot(self.report, label = "Erdos")
-        plt.plot(self.reportsecond, label = "Scalefree")
+        plt.plot(self.report, label = "Scalefree")
+        plt.plot(self.reportsecond, label = "Erdos")
         plt.grid()
         plt.legend()
         plt.title(f"{self.namesave}")
         plt.savefig(self.ps + f"{self.namesave}.png");
         plt.clf()
+        
+        with open(self.ps + f'LearningCurves.npy', 'wb') as f:
+                np.save(f, np.array(self.report), allow_pickle = True)
+                np.save(f, np.array(self.reportsecond), allow_pickle = True)
         
  
         
