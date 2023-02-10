@@ -113,21 +113,21 @@ PATH_TO_TRAIN_er = "../BRKGA/instances/Erdos/train/"
 Graphs_Train_Erdos, graphs_er = CargarDataset(PATH_TO_TRAIN_er)
 # ========================
 
-layers = ["SAGE", "GCN", "SGConv", "GAT","GraphConv"]
+layers = ["SAGE", "GCN"]#, "SGConv", "GAT","GraphConv"]
 
 torch.manual_seed(SEED)
 
-cant_layers = [1]*5
-cant_layers += [2]*5
-cant_layers += [3]*5
+cant_layers = [3]*2
+cant_layers += [2]*2
+cant_layers += [1]*2
 
-Models = [GNN(num_features, num_classes, name_layer = layer_name, num_layers = 1) for 
+Models = [GNN(num_features, num_classes, name_layer = layer_name, num_layers = 3) for 
          layer_name in layers]
 
 Models += [GNN(num_features, num_classes, name_layer = layer_name, num_layers = 2) for 
          layer_name in layers]
 
-Models += [GNN(num_features, num_classes, name_layer = layer_name, num_layers = 3) for 
+Models += [GNN(num_features, num_classes, name_layer = layer_name, num_layers = 1) for 
          layer_name in layers]
 
 # ============== Funciones para el entreno ==============
@@ -266,12 +266,12 @@ for mutation in mutations:
     for cross_over in cross_overs:
         for crossover_type in crossover_types:
             for Max_iteration in Max_iterations:
-                for i in range(len(layers)):
-                    dir_name = f"{PATH_SAVE_TRAINS}{layers[i]}_{cant_layers[i]}_mut_{mutation:.1f}_cross_{cross_over:.1f}_type_{crossover_type}_iter_{Max_iteration}/"
+                for i in range(len(Models)):
+                    dir_name = f"{PATH_SAVE_TRAINS}{layers[i%2]}_{cant_layers[i]}_mut_{mutation:.1f}_cross_{cross_over:.1f}_type_{crossover_type}_iter_{Max_iteration}/"
                     if not os.path.exists(dir_name):
                         os.mkdir(dir_name)
 
-                    print(f"\n -- Next layer {layers[i]} -- \n")
+                    print(f"\n -- Next layer {layers[i%2]} {cant_layers[i]} -- \n")
 
                     # Para cada modelo, se establece el límite de cada valor
                     varbound = np.array([[-10,10]] * getDimParams( Models[i]) )
@@ -295,7 +295,7 @@ for mutation in mutations:
                                   algorithm_parameters = algorithm_param,
                                   function_timeout = 1_000_000,
                                   convergence_curve = False, 
-                                  name = layers[i], 
+                                  name = layers[i%2], 
                                   ps = dir_name)
 
                     # NOTA: las curvas de aprendizaje se generan y se guardan dentro de la función "ga"
@@ -320,6 +320,6 @@ for mutation in mutations:
 
                     # Finalmente se guarda en state_dict del mejor.
                     torch.save(Models[i].state_dict(), 
-                                       f=f"{dir_name}{layers[i]}_seed_{SEED}_thr_{int(threshold*10)}_date_{dt_string}.pt")
+                                       f=f"{dir_name}{layers[i%2]}_seed_{SEED}_thr_{int(threshold*10)}_date_{dt_string}.pt")
 
 
