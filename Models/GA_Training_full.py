@@ -15,6 +15,7 @@ from torch_geometric.nn import GCNConv
 import torch_geometric.nn as geom_nn
 from OwnGenetical import geneticalgorithm as ga
 import sys
+import subprocess
 
 
 import pandas as pd
@@ -53,7 +54,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 # Ejemplo
 
-# python GA_Training.py -pi "../BRKGA/instances/scalefree/train/" -ps "./runs/scalefree/GA/" -s 13 -i 100 -pop 20 -elit 0.01
+# python GA_Training_full.py -pi "../BRKGA/instances/scalefree/train/" -ps "./runs/eliminar/" -s 13 -i 100 -pop 3 -elit 0.01
 
 threshold = 0.5
 
@@ -320,6 +321,23 @@ for mutation in mutations:
 
                     # Finalmente se guarda en state_dict del mejor.
                     torch.save(Models[i].state_dict(), 
-                                       f=f"{dir_name}{layers[i%2]}_seed_{SEED}_thr_{int(threshold*10)}_date_{dt_string}.pt")
+                                       f=f"{dir_name}{layers[i%2]}{cant_layers[i]}_seed_{SEED}_thr_{int(threshold*10)}_date_{dt_string}.pt")
+                    
+                    
+                    if not os.path.exists(dir_name + "probs/"):
+                        os.mkdir(dir_name + "probs/")
+                    
+                    
+                    
+                    res = subprocess.run([
+                        sys.executable, "ExtractProbabilitiesModels.py", "-pm", dir_name, "-pi",
+                        "../BRKGA/instances/socialnetworks/", "-ps", dir_name + "probs/"])
+
+                    if res.returncode == 1:
+                        print("No se logró")
+                    elif res.returncode == 0:
+                        print("Se guardaron las probabilidades")
+
+                    
 
 

@@ -100,7 +100,8 @@ for run_name, model, seed in zip(RUNS_LIST, MODELS, SEEDS):
     print()
     
     #net = GNN(c_in = num_features, c_hidden = 100, c_out = 2, num_layers = 2, layer_name = model, dp_rate=0.1)
-    net = GNN(num_node_features = 5, num_classes = 2, name_layer = model[:4])
+    cant_layers = 1 if model[:4] == '' else model[:4]
+    net = GNN(num_node_features = 5, num_classes = 2, name_layer = model[:4], num_layers = cant_layers)
     
     net.load_state_dict(torch.load(PATH_SAVED_TRAINS+run_name))
     

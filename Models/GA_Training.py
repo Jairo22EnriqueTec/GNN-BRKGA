@@ -244,8 +244,8 @@ def Func2(X, MDH = False, alpha = 0.7, scalefree = True):
 
 print(f"\nMDH value: {Func('_', MDH = True)}\n")
 
-#for i in range(len(layers)):
-for i in range(1):
+for i in range(len(layers)):
+#for i in range(1):
     
     print(f"\n -- Next layer {layers[i]} -- \n")
     
