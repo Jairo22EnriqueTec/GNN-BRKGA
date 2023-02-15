@@ -114,13 +114,13 @@ PATH_TO_TRAIN_er = "../BRKGA/instances/Erdos/train/"
 Graphs_Train_Erdos, graphs_er = CargarDataset(PATH_TO_TRAIN_er)
 # ========================
 
-layers = ["GCN", "SGConv"]#, "SGConv", "GAT","GraphConv"]
+layers = ["SAGE", "GCN", "SGConv", "GAT","GraphConv"]
 
 torch.manual_seed(SEED)
 
-cant_layers = [3]*2
-cant_layers += [2]*2
-cant_layers += [1]*2
+cant_layers = [3]*5
+cant_layers += [2]*5
+cant_layers += [1]*5
 
 Models = [GNN(num_features, num_classes, name_layer = layer_name, num_layers = 3) for 
          layer_name in layers]
@@ -253,13 +253,16 @@ def Func2(X, MDH = False, alpha = 0.7, scalefree = True):
     
     return value * (alpha) + loss * (1 - alpha)
 
+def Func_main(X):
+    return (Func(X) + Func2(X))/2
+    
 
 print(f"\nMDH value: {Func('_', MDH = True)}\n")
 
 mutations = [0.1, 0.2, 0.3, 0.4]
 cross_overs = [0.6, 0.5, 0.4, 0.3]
 crossover_types = ["one_point", "two_point", "uniform"]
-Max_iterations = [3, 4]
+Max_iterations = [10, 4]
 #Max_iterations = [100, 200, 300]
 
 
@@ -269,12 +272,12 @@ for mutation in mutations:
             for Max_iteration in Max_iterations:
                 for i in range(len(Models)):
                     
-                    dir_name = f"{PATH_SAVE_TRAINS}{layers[i%2]}_{cant_layers[i]}_mut_{mutation:.1f}_cross_{cross_over:.1f}_type_{crossover_type}_iter_{Max_iteration}/"
+                    dir_name = f"{PATH_SAVE_TRAINS}{layers[i%5]}_{cant_layers[i]}_mut_{mutation:.1f}_cross_{cross_over:.1f}_type_{crossover_type}_iter_{Max_iteration}/"
                     
                     if not os.path.exists(dir_name):
                         os.mkdir(dir_name)
 
-                    print(f"\n -- Next layer {layers[i%2]} {cant_layers[i]} -- \n")
+                    print(f"\n -- Next layer {layers[i%5]} {cant_layers[i]} -- \n")
 
                     # Para cada modelo, se establece el límite de cada valor
                     varbound = np.array([[-10,10]] * getDimParams( Models[i]) )
@@ -290,15 +293,16 @@ for mutation in mutations:
                                        'max_iteration_without_improv' : max_iterations//2}
 
                     # se correo el modelo
-                    GA_model = ga(function = Func,
-                                  secondfunc = Func2,
+                    GA_model = ga(function = Func_main,
+                                  secondfunc = Func,
+                                  thirdfunc = Func2,
                                   dimension = getDimParams(Models[i]),                
                                   variable_type = 'real',                
                                   variable_boundaries = varbound,                
                                   algorithm_parameters = algorithm_param,
                                   function_timeout = 1_000_000,
                                   convergence_curve = False, 
-                                  name = layers[i%2], 
+                                  name = layers[i%5], 
                                   ps = dir_name)
 
                     # NOTA: las curvas de aprendizaje se generan y se guardan dentro de la función "ga"
@@ -319,7 +323,7 @@ for mutation in mutations:
 
                     # Finalmente se guarda en state_dict del mejor.
                     torch.save(Models[i].state_dict(), 
-                                       f=f"{dir_name}{layers[i%2]}{cant_layers[i]}_seed_{SEED}_thr_{int(threshold*10)}_date_{dt_string}.pt")
+                                       f=f"{dir_name}{layers[i%5]}{cant_layers[i]}_seed_{SEED}_thr_{int(threshold*10)}_date_{dt_string}.pt")
                     
                     if not os.path.exists(dir_name + "probs/"):
                         os.mkdir(dir_name + "probs/")
@@ -338,7 +342,7 @@ for mutation in mutations:
                     #path_prob = "runs/eliminar/SAGE_3_mut_0.1_cross_0.6_type_one_point_iter_3/probs/";
                     
                     res = subprocess.run(["./diffusion.exe", "-pp", dir_name + "probs/", "-ps", 
-                                          dir_name + "Res_diffusion.txt", "-m", layers[i%2]])
+                                          dir_name + "Res_diffusion.txt", "-m", layers[i%5]])
                     
                     if res.returncode == 1:
                         print("No se logró")

@@ -60,7 +60,20 @@ class geneticalgorithm():
                 algorithm over iterations
     '''
     #############################################################
-    def __init__(self, function, secondfunc, dimension, variable_type='bool',                  variable_boundaries=None,                 variable_type_mixed=None,                  function_timeout=10,                 algorithm_parameters={'max_num_iteration': None,                                       'population_size':100,                                       'mutation_probability':0.1,                                       'elit_ratio': 0.01,                                       'crossover_probability': 0.5,                                       'parents_portion': 0.3,                                       'crossover_type':'uniform',                                       'max_iteration_without_improv':None},                     convergence_curve=True,                         progress_bar=True, name = "", ps = ""):
+    def __init__(self, function, secondfunc, thirdfunc, dimension, variable_type='bool',                  
+                 variable_boundaries=None,                 
+                 variable_type_mixed=None,                  
+                 function_timeout=10,                 
+                 algorithm_parameters = {'max_num_iteration': None,                                       
+                                       'population_size':100,                                       
+                                       'mutation_probability':0.1,                                       
+                                       'elit_ratio': 0.01,                                       
+                                       'crossover_probability': 0.5,                                       
+                                       'parents_portion': 0.3,                                       
+                                       'crossover_type':'uniform',                                   
+                                       'max_iteration_without_improv':None},                     
+                 convergence_curve=True,                         
+                 progress_bar = True, name = "", ps = ""):
 
 
         '''
@@ -116,6 +129,7 @@ class geneticalgorithm():
   
         '''
         self.secondfunc = secondfunc
+        self.thirdfunc = thirdfunc
         self.__name__=geneticalgorithm
         self.namesave = name
         self.ps = ps
@@ -253,8 +267,6 @@ class geneticalgorithm():
         self.integers=np.where(self.var_type=='int')
         self.reals=np.where(self.var_type=='real')
         
-        
-        
         pop=np.array([np.zeros(self.dim+1)]*self.pop_s)
         solo=np.zeros(self.dim+1)
         var=np.zeros(self.dim)       
@@ -262,11 +274,12 @@ class geneticalgorithm():
         for p in range(0,self.pop_s):
          
             for i in self.integers[0]:
-                var[i]=np.random.randint(self.var_bound[i][0],                        self.var_bound[i][1]+1)  
+                var[i]=np.random.randint(self.var_bound[i][0],                        
+                                         self.var_bound[i][1]+1)  
                 solo[i]=var[i].copy()
             for i in self.reals[0]:
                 
-                var[i]=self.var_bound[i][0]+np.random.random()*                (self.var_bound[i][1]-self.var_bound[i][0])    
+                var[i]=self.var_bound[i][0]+np.random.random()*(self.var_bound[i][1]-self.var_bound[i][0])    
                 solo[i]=var[i].copy()
 
             
@@ -279,7 +292,8 @@ class geneticalgorithm():
 
         #############################################################
         # Report
-        self.report=[]
+        self.report = []
+        self.reportthird=[]
         self.reportsecond=[]
         self.test_obj=obj
         self.best_variable=var.copy()
@@ -289,16 +303,12 @@ class geneticalgorithm():
         t=1
         counter=0
         while t<=self.iterate:
-            
-            
-            
+
             if self.progress_bar==True:
                 self.progress(t,self.iterate, status="GA is running...", bestfunc = self.best_function)
             #############################################################
             #Sort
             pop = pop[pop[:,self.dim].argsort()]
-
-                
             
             if pop[0,self.dim]<self.best_function:
                 counter=0
@@ -309,8 +319,10 @@ class geneticalgorithm():
             #############################################################
             # Report
 
+            
             self.report.append(pop[0,self.dim])
             self.reportsecond.append(self.secondfunc(self.best_variable))
+            self.reportthird.append(self.thirdfunc(self.best_variable))
             # AQUI
             with open(self.ps + f'{self.namesave}_iter_{t}.npy', 'wb') as f:
                 np.save(f, np.array(self.best_variable), allow_pickle = True)
@@ -318,8 +330,9 @@ class geneticalgorithm():
                 #for line in self.best_variable:
                 #    f.write(str(line) + "\n")
                     
-            plt.plot(self.report, label = "scalefree")
-            plt.plot(self.reportsecond, label = "Erdos")
+            plt.plot(self.report, label = "Combinated")
+            plt.plot(self.reportsecond, label = "scalefree")
+            plt.plot(self.reportthird, label = "Erdos")
             plt.grid()
             plt.legend()
             plt.title(f"{self.namesave}")
@@ -420,9 +433,11 @@ class geneticalgorithm():
 
         self.report.append(pop[0,self.dim])
         self.reportsecond.append(self.secondfunc(self.best_variable))
+        self.reportthird.append(self.thirdfunc(self.best_variable))
         
-        plt.plot(self.report, label = "Scalefree")
-        plt.plot(self.reportsecond, label = "Erdos")
+        plt.plot(self.report, label = "Combinated")
+        plt.plot(self.reportsecond, label = "scalefree")
+        plt.plot(self.reportthird, label = "Erdos")
         plt.grid()
         plt.legend()
         plt.title(f"{self.namesave}")
@@ -432,6 +447,7 @@ class geneticalgorithm():
         with open(self.ps + f'LearningCurves.npy', 'wb') as f:
                 np.save(f, np.array(self.report), allow_pickle = True)
                 np.save(f, np.array(self.reportsecond), allow_pickle = True)
+                np.save(f, np.array(self.reportthird), allow_pickle = True)
         
  
         
