@@ -308,30 +308,43 @@ for mutation in mutations:
                     # para guardar los parámetros en cada iteración.
 
                     GA_model.run()
+                    
+                    
+                    with open(dir_name + "LearningCurves.npy", 'rb') as f:
+                            scf = np.load(f, allow_pickle = True)
+                            er = np.load(f, allow_pickle = True)
 
+                    best_index = np.argmin((scf + er)/2)
+
+                    with open(f"{dir_name}{layers[i%5]}_iter_{best_index}.npy", 'rb') as f:
+                            X = np.load(f, allow_pickle = True)
+                    
+                    print(f"El mejor index es la iteración: {best_index}")
                     # se extraé el mejor individuo al final del GA y se carga dentro del modelo
-                    sd = getStateDict(Models[i], GA_model.best_variable)
+                    sd = getStateDict(Models[i], X)
                     Models[i].load_state_dict(sd)
 
-                    r1 = Func(GA_model.best_variable)
-                    r2 = Func2(GA_model.best_variable)
+                    r1 = Func(X)
+                    r2 = Func2(X)
 
                     with open(dir_name+'Res.npy', 'wb') as f:
                         np.save(f, np.array([r1, r2]), allow_pickle = True)
 
                     # Finalmente se guarda en state_dict del mejor.
+
                     torch.save(Models[i].state_dict(), 
                                        f=f"{dir_name}{layers[i%5]}{cant_layers[i]}_seed_{SEED}_thr_{int(threshold*10)}_date_{dt_string}.pt")
                     
                     if not os.path.exists(dir_name + "probs/"):
                         os.mkdir(dir_name + "probs/")
                     
+                    # Se extraen las probabilidades con el mejor modelos guardado.
                     res = subprocess.run([
                         sys.executable, "ExtractProbabilitiesModels.py", "-pm", dir_name, "-pi",
                         "../BRKGA/instances/socialnetworks/", "-ps", dir_name + "probs/"])
 
                     if res.returncode == 1:
-                        print("No se logró")
+                        print("No se pudieron cargar las probabilidades")
                     elif res.returncode == 0:
                         print("Se guardaron las probabilidades")
                         
@@ -339,13 +352,15 @@ for mutation in mutations:
 
                     #path_prob = "runs/eliminar/SAGE_3_mut_0.1_cross_0.6_type_one_point_iter_3/probs/";
                     
+                    # Se corre el algoritmo de difusión en C++
+                    
                     res = subprocess.run(["./diffusion.exe", "-pp", dir_name + "probs/", "-ps", 
                                           dir_name + "Res_diffusion.txt", "-m", layers[i%5]])
                     
                     if res.returncode == 1:
-                        print("No se logró")
+                        print("No se pudo correr el algoritmo de difusión.")
                     elif res.returncode == 0:
-                        print("Se logró")
+                        print("Los resultados están listos.")
 
                     
 
