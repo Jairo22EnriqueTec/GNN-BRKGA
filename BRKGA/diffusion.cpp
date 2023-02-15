@@ -61,8 +61,7 @@ vector<string> graphs = {"graph_football",
 vector<string> graphs = {"graph_football",
     "graph_jazz",
     "graph_karate",
-    "gemsec_facebook_artist"};
-    /*
+    "gemsec_facebook_artist",
     "ego-facebook",
     "graph_actors_dat",
     "graph_CA-AstroPh",
@@ -76,7 +75,7 @@ vector<string> graphs = {"graph_football",
     "soc-gplus",
     "socfb-Brandeis99",
     "socfb-Mich67",
-    "socfb-nips-ego"};
+    "socfb-nips-ego",
     
     "Amazon0302",
     "Amazon0312",
@@ -86,7 +85,7 @@ vector<string> graphs = {"graph_football",
     "loc-gowalla_edges",
     "deezer_HR",
     "musae_git"};
-*/
+
 /*
 
 vector<string> graphs = {
@@ -232,7 +231,7 @@ int main(int argc, char** argv){
         //string PATH_TO_SAVE = "../FastCover/results/scalefree/justprob/FastCoverResults_scalefree.txt";
         //PATH_TO_SAVE = "../"+directory+"/results/scalefree_MDH_socialnetworks/Pruebas_GA/TwoLayers/"+model+"Results_SMS.txt";
         pathprob_esp = pathprob+model;
-        pathinstance = "instances/socialnetworks/dimacs/";
+        pathinstance = "../BRKGA/instances/socialnetworks/dimacs/";
 
         //PATH_TO_SAVE = "../"+directory+"/results/scalefree_MDH_Erdos/Pruebas_GA/MoreTrain/SinBC/"+model+"Results_SME.txt";
         //pathprob = "../"+directory+"/probabilidades/scalefree_Erdos/Pruebas_GA/MoreTrain/SinBC/"+model;

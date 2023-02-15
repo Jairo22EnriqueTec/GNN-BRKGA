@@ -114,7 +114,7 @@ PATH_TO_TRAIN_er = "../BRKGA/instances/Erdos/train/"
 Graphs_Train_Erdos, graphs_er = CargarDataset(PATH_TO_TRAIN_er)
 # ========================
 
-layers = ["SAGE", "GCN"]#, "SGConv", "GAT","GraphConv"]
+layers = ["GCN", "SGConv"]#, "SGConv", "GAT","GraphConv"]
 
 torch.manual_seed(SEED)
 
@@ -132,7 +132,6 @@ Models += [GNN(num_features, num_classes, name_layer = layer_name, num_layers = 
          layer_name in layers]
 
 # ============== Funciones para el entreno ==============
-
 
 
 def getDimParams(model):
@@ -167,6 +166,7 @@ def SimpleweightedCrossEntropy(y, p, w):
     return np.sum(y*(1-p)*w[0] + (1-y)*p*w[1]) / len(y)
 
 def Func(X, MDH = False, alpha = 0.7):
+    # X: 
     # Objective function
     
     if not MDH:
@@ -268,7 +268,9 @@ for mutation in mutations:
         for crossover_type in crossover_types:
             for Max_iteration in Max_iterations:
                 for i in range(len(Models)):
+                    
                     dir_name = f"{PATH_SAVE_TRAINS}{layers[i%2]}_{cant_layers[i]}_mut_{mutation:.1f}_cross_{cross_over:.1f}_type_{crossover_type}_iter_{Max_iteration}/"
+                    
                     if not os.path.exists(dir_name):
                         os.mkdir(dir_name)
 
@@ -312,22 +314,15 @@ for mutation in mutations:
                     r1 = Func(GA_model.best_variable)
                     r2 = Func2(GA_model.best_variable)
 
-
-
                     with open(dir_name+'Res.npy', 'wb') as f:
                         np.save(f, np.array([r1, r2]), allow_pickle = True)
-
-
 
                     # Finalmente se guarda en state_dict del mejor.
                     torch.save(Models[i].state_dict(), 
                                        f=f"{dir_name}{layers[i%2]}{cant_layers[i]}_seed_{SEED}_thr_{int(threshold*10)}_date_{dt_string}.pt")
                     
-                    
                     if not os.path.exists(dir_name + "probs/"):
                         os.mkdir(dir_name + "probs/")
-                    
-                    
                     
                     res = subprocess.run([
                         sys.executable, "ExtractProbabilitiesModels.py", "-pm", dir_name, "-pi",
@@ -337,6 +332,18 @@ for mutation in mutations:
                         print("No se logró")
                     elif res.returncode == 0:
                         print("Se guardaron las probabilidades")
+                        
+                    #path_save = "runs/eliminar/SAGE_3_mut_0.1_cross_0.6_type_one_point_iter_3/Results.txt"
+
+                    #path_prob = "runs/eliminar/SAGE_3_mut_0.1_cross_0.6_type_one_point_iter_3/probs/";
+                    
+                    res = subprocess.run(["./diffusion.exe", "-pp", dir_name + "probs/", "-ps", 
+                                          dir_name + "Res_diffusion.txt", "-m", layers[i%2]])
+                    
+                    if res.returncode == 1:
+                        print("No se logró")
+                    elif res.returncode == 0:
+                        print("Se logró")
 
                     
 

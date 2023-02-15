@@ -63,10 +63,6 @@ else:
         #temp = np.delete(temp, 0, 1)
         Features.append(temp)
 
-        
-
-
-
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 use_cuda = False
@@ -100,14 +96,19 @@ for run_name, model, seed in zip(RUNS_LIST, MODELS, SEEDS):
     print()
     
     #net = GNN(c_in = num_features, c_hidden = 100, c_out = 2, num_layers = 2, layer_name = model, dp_rate=0.1)
-    cant_layers = 1 if model[:4] == '' else model[:4]
-    net = GNN(num_node_features = 5, num_classes = 2, name_layer = model[:4], num_layers = cant_layers)
+    
+    model_name = model[:-1]
+
+    cant_layers = 1 if model[-1:] == '' else int(model[-1:])
+        
+    
+    net = GNN(num_node_features = 5, num_classes = 2, name_layer = model_name, num_layers = cant_layers)
     
     net.load_state_dict(torch.load(PATH_SAVED_TRAINS+run_name))
     
     if use_cuda:
         net.cuda()
-
+    
     c = 1
     for file, feat in zip(Graphs, Features):
             print(f"Loading {PATH_TO_TEST}txt/{file} ...")
@@ -116,7 +117,6 @@ for run_name, model, seed in zip(RUNS_LIST, MODELS, SEEDS):
             graph = igraph.Graph.Read_Edgelist(PATH_TO_TEST +"txt/"+ file, directed = False).to_networkx()
             data = Convert2DataSet([graph], [[]], [feat])[0]
             
-
             #G = graph.to_networkx().to_undirected()
 
             n = len(graph.nodes())
@@ -127,7 +127,7 @@ for run_name, model, seed in zip(RUNS_LIST, MODELS, SEEDS):
             # a la solución, lo cual está en la columna 1
             out = torch.exp(net(data)).T[1]
             
-            save(file, model, out)
+            save(file, model_name, out)
          
            
             c+=1
