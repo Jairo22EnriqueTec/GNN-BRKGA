@@ -253,8 +253,7 @@ def Func2(X, MDH = False, alpha = 0.7, scalefree = True):
     
     return value * (alpha) + loss * (1 - alpha)
 
-def Func_main(X):
-    return (Func(X) + Func2(X))/2
+
     
 
 print(f"\nMDH value: {Func('_', MDH = True)}\n")
@@ -293,9 +292,8 @@ for mutation in mutations:
                                        'max_iteration_without_improv' : max_iterations//2}
 
                     # se correo el modelo
-                    GA_model = ga(function = Func_main,
-                                  secondfunc = Func,
-                                  thirdfunc = Func2,
+                    GA_model = ga(function = Func,
+                                  secondfunc = Func2,
                                   dimension = getDimParams(Models[i]),                
                                   variable_type = 'real',                
                                   variable_boundaries = varbound,                
