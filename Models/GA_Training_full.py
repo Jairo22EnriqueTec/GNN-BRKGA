@@ -261,8 +261,8 @@ print(f"\nMDH value: {Func('_', MDH = True)}\n")
 mutations = [0.1, 0.2, 0.3, 0.4]
 cross_overs = [0.6, 0.5, 0.4, 0.3]
 crossover_types = ["one_point", "two_point", "uniform"]
-Max_iterations = [10, 4]
-#Max_iterations = [100, 200, 300]
+#Max_iterations = [10, 4]
+Max_iterations = [3, 200, 300]
 
 
 for mutation in mutations:
@@ -316,7 +316,7 @@ for mutation in mutations:
 
                     best_index = np.argmin((scf + er)/2)
 
-                    with open(f"{dir_name}{layers[i%5]}_iter_{best_index}.npy", 'rb') as f:
+                    with open(f"{dir_name}{layers[i%5]}_iter_{best_index+1}.npy", 'rb') as f:
                             X = np.load(f, allow_pickle = True)
                     
                     print(f"El mejor index es la iteración: {best_index}")
