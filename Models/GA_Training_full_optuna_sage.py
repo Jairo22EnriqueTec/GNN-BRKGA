@@ -277,11 +277,11 @@ def objective(trial):
     #crossover_type = trial.suggest_categorical('crossover_type', ["one_point", "two_point", "uniform"])
     crossover_type = "one_point"
     mutation = trial.suggest_float('mutation', 0.45, 0.57)
-    Max_iteration = 150
+    Max_iteration = 100
     cross_over = trial.suggest_float('cross_over', 0.53, 0.6)
     i = 2
     
-    dir_name = f"{PATH_SAVE_TRAINS}{layers[i%1]}_{cant_layers[i]}_mut_{mutation:.1f}_cross_{cross_over:.1f}_type_{crossover_type}_iter_{Max_iteration}/"
+    dir_name = f"{PATH_SAVE_TRAINS}{layers[i%1]}_{cant_layers[i]}_mut_{mutation:.4f}_cross_{cross_over:.4f}_type_{crossover_type}_iter_{Max_iteration}/"
                     
     if not os.path.exists(dir_name):
         os.mkdir(dir_name)
@@ -382,6 +382,6 @@ def objective(trial):
 
 # 3. Create a study object and optimize the objective function.
 study = optuna.create_study(direction = 'minimize', study_name = 'GNN_GA_SAGE', 
-                            storage = 'sqlite:///GNN_GA_SAGES3.db', load_if_exists = True)
-study.optimize(objective, n_trials = 20)
+                            storage = 'sqlite:///GNN_GA_SAGES4.db', load_if_exists = True)
+study.optimize(objective, n_trials = 100)
 
